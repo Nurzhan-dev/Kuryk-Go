@@ -42,7 +42,7 @@ export default function SignInPage() {
       <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
         <div className="flex flex-col items-center mb-8">
           <Image src="/" alt="" width={80} height={80} className="mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 uppercase italic">Kuruk Go</h1>
+          <h1 className="text-2xl font-bold text-gray-900 uppercase italic">Kuryk Go</h1>
         </div>
 
         <form onSubmit={handleSignIn} className="space-y-4">
