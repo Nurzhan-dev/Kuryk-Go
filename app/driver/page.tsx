@@ -118,6 +118,9 @@ export default function DriverDashboard() {
   // --- ЭКРАН 1: ВЫБОР ТРАНСПОРТА ---
   if (!selectedVehicle) {
     return (
+      <div className="min-h-screen bg-white flex flex-col items-center">
+      {/* 1. ВЕРХНЯЯ ПАНЕЛЬ С ЛОГОТИПОМ */}
+      
       <div className="p-6 bg-gray-100 min-h-screen flex flex-col justify-center items-center">
         <h1 className="text-3xl font-black uppercase italic mb-10 text-center leading-tight text-black tracking-tighter">
         На каком транспорте <br /> 
@@ -154,8 +157,12 @@ export default function DriverDashboard() {
         ))}
       </div>
     </div>
-    );
-  }
+    <p className="mt-auto mb-6 text-[10px] font-bold text-gray-300 uppercase tracking-widest">
+        Kuryk Go • 2026
+      </p>
+    </div>
+  );
+}
   // Фильтруем заказы для UI
   const filteredOrders = orders.filter(o => o.car_type === selectedVehicle);
 

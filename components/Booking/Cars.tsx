@@ -22,56 +22,63 @@ function Cars() {
   };
   
   return (
-    <div className="mt-5">
-      <h2 className="font-semibold text-[16px] mb-4 text-gray-700">Выберите транспорт</h2>
-      
-      <div className="grid grid-cols-2 gap-4 max-w-[500px] mx-auto">
-        {CarsList.map((item, index) => (
-          <div
-            key={index}
-            onClick={() => {
-              const cost = getCost(item.charges);
-              console.log("Выбрана машина:", item.name, "Цена:", cost); // Для проверки в консоли
-              
-              // Проверяем, что функция существует, и записываем ОБЪЕКТ
-              if (setSelectedCar) {
-                setSelectedCar({
-                  name: item.name,
-                  amount: cost       
-                });
-              }
-            }}  
-            className={`p-4 border-[1px] rounded-2xl cursor-pointer transition-all 
-            ${selectedCar?.name === item.name 
-             ? "border-black border-[2px] bg-yellow-500 shadow-md" 
-             : "border-gray-100 bg-yellow-200"}`}
-          > 
-            <div className="h-[70px] flex items-center justify-center mb-3">
-              <Image
-                src={item.image}
-                alt={item.name}
-                width={100}
-                height={60}
-                className="object-contain w-full h-full"
-              />
-            </div>
-      
-            <div className="w-full">
-              <h2 className="text-[12px] font-bold text-gray-500 uppercase">
-                {item.name}
-              </h2>
-              <h2 className="text-[20px] font-black text-slate-900 my-1">
-                {getCost(item.charges)} <span className="text-[14px] font-bold text-yellow-600">₸</span>
-              </h2>
-              <p className="text-[10px] text-gray-600 leading-snug mt-2">
-                {item.description}
-              </p>
-            </div>
+  <div className="mt-5 px-2">
+    <h2 className="font-bold text-[18px] mb-4 text-gray-800 italic uppercase tracking-tighter">
+      Выберите транспорт
+    </h2>
+    
+    {/* Добавили gap-3 для мобилок и ограничили ширину */}
+    <div className="grid grid-cols-2 gap-3 max-w-[500px] mx-auto">
+      {CarsList.map((item, index) => (
+        <div
+          key={index}
+          onClick={() => {
+            const cost = getCost(item.charges);
+            if (setSelectedCar) {
+              setSelectedCar({
+                name: item.name,
+                amount: cost       
+              });
+            }
+          }}  
+          // Добавлен h-full и flex flex-col для одинаковой высоты всех карточек
+          className={`p-3 border-[1px] rounded-2xl cursor-pointer transition-all flex flex-col justify-between h-full
+          ${selectedCar?.name === item.name 
+            ? "border-black border-[2px] bg-yellow-500 shadow-lg scale-[1.02]" 
+            : "border-gray-200 bg-white hover:border-yellow-400"}`}
+        > 
+          {/* Контейнер картинки */}
+          <div className="w-full aspect-video flex items-center justify-center mb-2 overflow-hidden">
+            <img
+              src={item.image}
+              alt={item.name}
+              className="object-contain max-h-full w-auto"
+            />
           </div>
-        ))}
-      </div>
+    
+          <div className="w-full">
+            <h2 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+              {item.name}
+            </h2>
+            
+            {/* Цена теперь всегда в одну строку */}
+            <div className="flex items-baseline gap-1 my-1">
+              <span className="text-[18px] font-black text-slate-900">
+                {getCost(item.charges)}
+              </span>
+              <span className="text-[12px] font-bold text-yellow-700">₸</span>
+            </div>
+
+            {/* Описание с ограничением в 2 строки, чтобы не ломать высоту */}
+            <p className="text-[9px] leading-tight text-gray-600 line-clamp-2 h-[24px]">
+              {item.description}
+            </p>
+          </div>
+        </div>
+      ))}
     </div>
-  );
+  </div>
+ );
 }
 
 export default Cars;

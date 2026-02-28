@@ -40,10 +40,14 @@ export default function SignInPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
       <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
-        <div className="flex flex-col items-center mb-8">
-          <Image src="/" alt="" width={80} height={80} className="mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 uppercase italic">Kuryk Go</h1>
-        </div>
+        <div className="text-center mb-8 px-4">
+  <h2 className="text-3xl font-black uppercase tracking-tighter text-gray-900 italic">
+    Начинаем <span className="text-yellow-500">работу</span>
+  </h2>
+  <p className="text-[10px] uppercase font-bold text-gray-400 tracking-widest mt-1">
+    Введите данные для доступа к заказам
+  </p>
+  </div>
 
         <form onSubmit={handleSignIn} className="space-y-4">
           {error && <p className="text-red-500 text-sm bg-red-50 p-2 rounded font-bold text-center">{error}</p>}

@@ -80,7 +80,7 @@ function CheckoutForm() {
               paymentMethod === "cash" ? "border-yellow-500 bg-yellow-50" : "border-gray-100"
             }`}
           >
-            <span className="text-2xl">💵</span>
+            <span className="text-2xl"><img src="/cash.png"></img></span>
             <span className="text-[10px] font-bold uppercase text-black">Наличка</span>
           </button>
 
