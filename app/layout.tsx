@@ -8,6 +8,9 @@ const outfit = Outfit({ subsets: ["latin"] });
 export const metadata = {
   title: "Kuryk Go — Перевозки твоего поселка",
   description: "Единый агрегатор такси, грузоперевозок и спецтехники в Курыке",
+  icons: {
+    icon: '/logo.jpg',
+  },
 };
 
 export default function RootLayout({

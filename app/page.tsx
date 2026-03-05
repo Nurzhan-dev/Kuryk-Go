@@ -37,21 +37,19 @@ export default function Home() {
   }
   }, [user]);
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+      {/* Hero Section with subtle gradient */}
+      <div className="w-full h-64 md:h-80 bg-gradient-to-b from-gray-200 to-gray-100"></div>
+      
       <UserLocationContext.Provider value={{ userLocation, setUserLocation }}>
         <SourceCordiContext.Provider value={{ soruceCordinates, setSourceCordinates }}>
           <DestinationCordiContext.Provider value={{ destinationCordinates, setDestinationCordinates }}>
             <SourceTextContext.Provider value={{ sourceText, setSourceText }}>
               <DestTextContext.Provider value={{ destText, setDestText }}>
                 <DirectionDataContext.Provider value={{ directionData, setDirectionData }}>
-                <div className="flex justify-center p-4 md:p-10">
-                  <div className="w-full max-w-xl bg-white shadow-2xl rounded-3xl overflow-hidden">
-                    <div className="p-4">
-                       <h1 className="text-2xl font-black text-center mb-6 uppercase italic">Заказать транспорт</h1>
-                       <Booking />
-                    </div>
+                  <div className="flex justify-center px-4 md:px-10 -mt-32 md:-mt-40 relative z-10">
+                    <Booking />
                   </div>
-                </div>
                 </DirectionDataContext.Provider>
               </DestTextContext.Provider>
             </SourceTextContext.Provider>

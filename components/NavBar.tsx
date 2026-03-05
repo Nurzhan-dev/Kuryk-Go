@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { supabase } from "@/lib/supabaseClient";
@@ -48,7 +47,7 @@ function NavBar() {
   };
 
   return (
-    <nav className="relative w-full h-[180px] md:h-[200px] overflow-hidden border-b-4 border-yellow-200 sticky top-0 z-50 shadow-xl">
+    <nav className="relative w-full h-[180px] md:h-[200px] overflow-hidden sticky top-0 z-50 shadow-sm">
       
       {/* 1. СЛОЙ БАННЕРА */}
       <div className="absolute inset-0 z-0">
@@ -58,23 +57,25 @@ function NavBar() {
           style={{ objectPosition: 'center 73%' }} 
           alt="Banner"
         />
-        <div className="absolute inset-0 bg-black/20"></div>
+        {/* Затемнение и Белый туман */}
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/60 to-transparent"></div>
       </div>
 
-      {/* 2. СЛОЙ КОНТЕНТА (Тут была ошибка с закрывающим тегом) */}
+      {/* 2. СЛОЙ КОНТЕНТА (Добавлен пропущенный открывающий тег) */}
       <div className="relative z-10 h-full flex justify-between items-center px-4 md:px-10">
         
         {/* ЛЕВАЯ ЧАСТЬ: ЛОГОТИП И КНОПКА */}
         <div className="flex items-center gap-4">
           <div 
-            className="flex items-center cursor-pointer active:scale-65 transition-transform" 
+            className="flex items-center cursor-pointer active:scale-95 transition-transform" 
             onClick={() => router.push("/")}
           >
-            <div className="h-10 w-28 overflow-hidden flex items-center justify-center rounded-xl bg-black/30 backdrop-blur-sm border border-white/10">
+            <div className="h-12 w-32 flex items-center justify-center rounded-2xl overflow-hidden bg-white shadow-sm border border-white/20">
               <img 
                 src="/logo.jpg" 
                 alt="Logo" 
-                className="" 
+                className="h-full w-full object-cover" 
               />
             </div>
           </div>
@@ -95,7 +96,7 @@ function NavBar() {
           {user ? (
             <div className="flex items-center gap-3">
               <span className="text-xs hidden sm:block text-white font-medium drop-shadow-md">
-                {user.email?.split('@')[0]}
+                {user.user_metadata?.full_name || "Водитель"}
               </span>
               <button 
                 onClick={handleSignOut}
@@ -113,8 +114,7 @@ function NavBar() {
             </button>
           )}
         </div>
-
-      </div> {/* ВОТ ЭТОТ ТЕГ БЫЛ ПРОПУЩЕН */}
+      </div> {/* Закрытие слоя контента */}
     </nav>
   );
 }

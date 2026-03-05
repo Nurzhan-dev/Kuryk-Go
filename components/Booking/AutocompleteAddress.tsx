@@ -55,25 +55,31 @@ function AutocompleteAddress() {
   // ... твои useEffect-ы для дебаунса остаются без изменений ...
 
   return (
-    <div className="flex flex-col gap-3">
-      {<input
-  type="text"
-  placeholder="Откуда..."
-  value={source}
-  onChange={(e) => { 
-    setSource(e.target.value); 
-    setSourceText(e.target.value); // Текст сразу летит в контекст для базы
-    }}
-  />}
-      {<input
-  type="text"
-  placeholder="Куда..."
-  value={destination}
-  onChange={(e) => { 
-    setDestination(e.target.value); 
-    setDestText(e.target.value); // Текст сразу летит в контекст для базы
-    }}
-   />}
+    <div className="grid grid-cols-2 gap-3">
+      <div className="relative">
+        <input
+          type="text"
+          placeholder="Откуда"
+          value={source}
+          onChange={(e) => { 
+            setSource(e.target.value); 
+            setSourceText(e.target.value);
+          }}
+          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-gray-600 focus:ring-1 focus:ring-gray-400 transition-all text-sm text-black bg-white"
+        />
+      </div>
+      <div className="relative">
+        <input
+          type="text"
+          placeholder="Куда"
+          value={destination}
+          onChange={(e) => { 
+            setDestination(e.target.value); 
+            setDestText(e.target.value);
+          }}
+          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-gray-600 focus:ring-1 focus:ring-gray-400 transition-all text-sm text-black bg-white"
+        />
+      </div>
     </div>
   );
 }

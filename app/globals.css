@@ -23,6 +23,16 @@ body {
   background: white; /* Для такси лучше светлый фон */
 }
 
+/* Scrollbar hide utility for horizontal scrollable containers */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* 2. Обязательные стили для отображения карты */
 .leaflet-container {
   width: 100%;
