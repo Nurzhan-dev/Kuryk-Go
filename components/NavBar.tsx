@@ -47,7 +47,7 @@ function NavBar() {
   };
 
   return (
-    <nav className="relative w-full h-[180px] md:h-[200px] overflow-hidden sticky top-0 z-50 shadow-sm">
+    <nav className="relative w-full h-24 md:h-28 overflow-hidden sticky top-0 z-50 shadow-sm">
       
       {/* 1. СЛОЙ БАННЕРА */}
       <div className="absolute inset-0 z-0">
@@ -59,19 +59,19 @@ function NavBar() {
         />
         {/* Затемнение и Белый туман */}
         <div className="absolute inset-0 bg-black/10"></div>
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/60 to-transparent"></div>
+        <div className="absolute inset-x-0 bottom-0 h-12 md:h-16 bg-gradient-to-t from-white via-white/60 to-transparent"></div>
       </div>
 
       {/* 2. СЛОЙ КОНТЕНТА (Добавлен пропущенный открывающий тег) */}
-      <div className="relative z-10 h-full flex justify-between items-center px-4 md:px-10">
+      <div className="relative z-10 h-full flex justify-between items-center px-3 md:px-6">
         
         {/* ЛЕВАЯ ЧАСТЬ: ЛОГОТИП И КНОПКА */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           <div 
             className="flex items-center cursor-pointer active:scale-95 transition-transform" 
             onClick={() => router.push("/")}
           >
-            <div className="h-12 w-32 flex items-center justify-center rounded-2xl overflow-hidden bg-white shadow-sm border border-white/20">
+            <div className="h-10 md:h-12 w-28 md:w-32 flex items-center justify-center rounded-xl overflow-hidden bg-white shadow-sm border border-white/20">
               <img 
                 src="/logo.jpg" 
                 alt="Logo" 
@@ -83,24 +83,24 @@ function NavBar() {
           {user && (
             <button 
               disabled={isNavigating}
-              className="text-white bg-black hover:bg-gray-800 px-4 py-2 rounded-xl transition-all font-bold text-[10px] md:text-sm shadow-md active:scale-95" 
+              className="text-white bg-black hover:bg-gray-800 px-4 md:px-5 py-2 md:py-2.5 rounded-lg transition-all font-bold text-xs md:text-sm shadow-md active:scale-95 h-10 md:h-12 flex items-center" 
               onClick={goToDriver}
             >
-              {isNavigating ? "Ждите..." : "Кабинет"}
+              {isNavigating ? "..." : "Кабинет"}
             </button>
           )}
         </div>
 
         {/* ПРАВАЯ ЧАСТЬ: ВХОД/ВЫХОД */}
-        <div className="flex items-center gap-2 md:gap-4">
+        <div className="flex items-center gap-2">
           {user ? (
-            <div className="flex items-center gap-3">
-              <span className="text-xs hidden sm:block text-white font-medium drop-shadow-md">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] hidden sm:block text-white font-medium drop-shadow-md">
                 {user.user_metadata?.full_name || "Водитель"}
               </span>
               <button 
                 onClick={handleSignOut}
-                className="bg-white/10 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-xs font-semibold transition-all backdrop-blur-md border border-white/20"
+                className="bg-white/10 hover:bg-red-600 text-white px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-[11px] md:text-xs font-semibold transition-all backdrop-blur-md border border-white/20 h-10 md:h-12 flex items-center"
               >
                 Выход
               </button>
@@ -108,7 +108,7 @@ function NavBar() {
           ) : (
             <button 
               onClick={() => router.push("/sign-in")}
-              className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-all"
+              className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-bold shadow-lg transition-all h-10 md:h-12 flex items-center"
             >
               Войти
             </button>

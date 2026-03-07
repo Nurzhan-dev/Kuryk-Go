@@ -45,7 +45,7 @@ function CheckoutForm() {
 
       alert("Заказ принят! Ждите звонка водителя.");
     } catch (error: any) {
-      console.error("Ошибка Supabase:", error.message);
+      console.error("Ошибка при отправке заказа");
       alert("Ошибка при отправке: " + error.message);
     } finally {
       setLoading(false);

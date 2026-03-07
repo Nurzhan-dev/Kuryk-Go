@@ -89,6 +89,7 @@ export default function DriverDashboard() {
     if (!error) {
       setOrders(prev => prev.filter(order => order.id !== orderId));
       fetchHistory();
+      // Защита: номер телефона не логируется в консоль
       window.location.href = `tel:${phone}`;
     }
   };
@@ -241,10 +242,11 @@ export default function DriverDashboard() {
         <div className="grid gap-3">
           {history.map((item) => (
             <div key={item.id} className="bg-white p-4 rounded-[24px] flex justify-between items-center shadow-sm border border-gray-50">
-              <div className="flex flex-col">
+              <div className="flex flex-col flex-1">
                 <span className="text-[9px] font-bold text-gray-300 uppercase leading-none mb-1">{item.car_type}</span>
-                <span className="font-bold text-sm text-black truncate max-w-[140px] leading-tight">{item.to_address}</span>
-                <span className="text-[10px] text-blue-500 font-bold mt-1">Клиент: ***{item.passenger_phone?.slice(-4)}</span>
+                <span className="text-[9px] text-gray-500 font-semibold leading-tight mb-1">Откуда: <span className="text-black">{item.from_address?.split('(')[0].trim()}</span></span>
+                <span className="text-[9px] text-gray-500 font-semibold leading-tight mb-2">Куда: <span className="text-black">{item.to_address?.split('(')[0].trim()}</span></span>
+                <span className="text-[10px] text-blue-500 font-bold">Клиент: ***{item.passenger_phone?.slice(-4)}</span>
               </div>
               <div className="flex flex-col items-end gap-2">
                 <p className="font-black text-green-600 text-sm leading-none">{item.price} ₸</p>
