@@ -1,41 +1,160 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
-## This is demo:-  https://taxi-booking-app-kiran-kattis-projects.vercel.app/
+# Kuryk Go - Универсальный Агрегатор Перевозок
 
+[Демо приложения](https://taxi-booking-app-kiran-kattis-projects.vercel.app/)
 
+![Kuryk Go Banner](https://github.com/kirankattii/taxi-booking-app/assets/139916130/1231bbb1-94f8-4da8-a81c-dd17557d1696)
 
-![taxi](https://github.com/kirankattii/taxi-booking-app/assets/139916130/1231bbb1-94f8-4da8-a81c-dd17557d1696)
+## О проекте
 
-## Getting Started
+**Kuryk Go** — это современное веб-приложение для бронирования и управления перевозками. Это универсальный агрегатор, который объединяет услуги такси, каршеринга и других видов транспорта в одной удобной платформе.
 
-First, run the development server:
+## ✨ Основные функции
+
+- 🗺️ **Интерактивная карта** - Реальная отслеживание местоположения пользователя и маршрутов с использованием Leaflet и Mapbox
+- 🚗 **Выбор транспорта** - Широкий выбор типов автомобилей для различных потребностей
+- 💳 **Безопасные платежи** - Интеграция со Stripe для безопасной обработки платежей
+- 🔐 **Аутентификация** - Система регистрации и входа с использованием Supabase
+- 👤 **Роли пользователей** - Поддержка разных ролей (пассажир, водитель)
+- 📍 **Маршрутизация** - Автоматический расчет маршрутов между точками
+- 🎨 **Современный дизайн** - Адаптивный интерфейс с использованием Tailwind CSS
+
+## 🛠️ Технологический стек
+
+### Frontend
+- **Next.js 14.0.3** - React фреймворк для создания веб-приложений
+- **React 18** - Библиотека для создания пользовательского интерфейса
+- **TypeScript** - Типизированный JavaScript для безопасности кода
+- **Tailwind CSS** - Утилита-первый CSS фреймворк для стилизации
+
+### Карты и навигация
+- **Leaflet 1.9.4** - Открытая библиотека для интерактивных карт
+- **React Leaflet 4.2.1** - React компоненты для Leaflet
+- **React Map GL 7.1.6** - Интеграция с Mapbox
+- **Leaflet Routing Machine 3.2.12** - Маршрутизация на карте
+
+### Backend и база данных
+- **Supabase** - BaaS платформа для аутентификации и базы данных
+  - `@supabase/supabase-js` - JavaScript клиент
+  - `@supabase/ssr` - Поддержка Server-Side Rendering
+
+### Платежи
+- **Stripe** - Интеграция платежной системы
+  - `@stripe/react-stripe-js` - React компоненты
+  - `@stripe/stripe-js` - JavaScript SDK
+  - `stripe` - Node.js SDK
+
+### DevDependencies
+- **PostCSS** - Инструмент для преобразования CSS
+- **Autoprefixer** - Автоматическое добавление префиксов CSS
+- **ESLint** - Анализ и проверка качества кода
+
+## 🚀 Начало работы
+
+### Предварительные требования
+- Node.js 16+ и npm/yarn/pnpm/bun
+
+### Установка и запуск
+
+Сначала клонируйте репозиторий и установите зависимости:
+
+```bash
+npm install
+# или
+yarn install
+# или
+pnpm install
+# или
+bun install
+```
+
+Запустите сервер разработки:
 
 ```bash
 npm run dev
-# or
+# или
 yarn dev
-# or
+# или
 pnpm dev
-# or
+# или
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Откройте [http://localhost:3000](http://localhost:3000) в браузере, чтобы увидеть результат.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Доступные команды
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+```bash
+npm run dev    # Запуск сервера разработки
+npm run build  # Сборка для продакшена
+npm start      # Запуск приложения в режиме продакшена
+npm run lint   # Проверка кода с ESLint
+```
 
-## Learn More
+## 📁 Структура проекта
 
-To learn more about Next.js, take a look at the following resources:
+```
+kuryk-go/
+├── app/
+│   ├── api/                  # API маршруты
+│   ├── Payment/              # Страница оплаты
+│   ├── driver/               # Панель водителя
+│   ├── sign-in/              # Вход в систему
+│   ├── sign-up/              # Регистрация
+│   ├── layout.tsx            # Основной макет приложения
+│   ├── page.tsx              # Главная страница (бронирование)
+│   └── globals.css           # Глобальные стили
+├── components/
+│   ├── Booking/              # Компонент бронирования
+│   ├── Map/                  # Компонент интерактивной карты
+│   ├── payment/              # Компоненты платежей
+│   └── NavBar.tsx            # Навигационная панель
+├── context/                  # Context API для управления состоянием
+├── lib/                      # Утилиты и конфигурации
+├── public/                   # Статические файлы
+└── data/                     # Данные приложения
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🔧 Конфигурация
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+### Переменные окружения
 
-## Deploy on Vercel
+Создайте файл `.env.local` в корневой директории и добавьте необходимые переменные:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```env
+NEXT_PUBLIC_SUPABASE_URL=ваш_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=ваш_supabase_key
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=ваш_stripe_key
+STRIPE_SECRET_KEY=ваш_stripe_secret
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## 📝 Редактирование
+
+Начните редактирование страницы, изменив `app/page.tsx`. Страница автоматически обновится при сохранении файла.
+
+Проект использует [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) для автоматической оптимизации и загрузки шрифта Inter.
+
+## 📚 Дополнительные ресурсы
+
+- [Документация Next.js](https://nextjs.org/docs) - узнайте о возможностях Next.js
+- [Учебник Next.js](https://nextjs.org/learn) - интерактивный учебник
+- [Документация Supabase](https://supabase.com/docs) - работа с BaaS
+- [Документация Stripe](https://stripe.com/docs) - интеграция платежей
+- [Документация Leaflet](https://leafletjs.com/) - работа с картами
+
+## 🚢 Развертывание
+
+Самый простой способ развернуть приложение Kuryk Go - использовать [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) от создателей Next.js.
+
+Проверьте [документацию по развертыванию Next.js](https://nextjs.org/docs/deployment) для более подробной информации.
+
+## 📄 Лицензия
+
+Этот проект находится под лицензией MIT.
+
+## 👨‍💻 Контрибьютинг
+
+Вклады приветствуются! Пожалуйста, создавайте Pull Requests для любых улучшений.
+
+---
+
+**Создано как универсальный решение для управления перевозками с использованием современных веб-технологий.**
