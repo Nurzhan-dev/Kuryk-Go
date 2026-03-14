@@ -7,7 +7,7 @@ export default function DriverDashboard() {
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"orders" | "active" | "completed">("orders");
-
+  const [showSoundPrompt, setShowSoundPrompt] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
   const [isSoundEnabled, setIsSoundEnabled] = useState(false);
   const vehicleRef = useRef<string | null>(null);
@@ -61,15 +61,20 @@ export default function DriverDashboard() {
   }, []);
 
   const fetchOrders = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("orders")
-      .select("*")
-      .eq("status", "pending")
-      .order("created_at", { ascending: false });
-    if (!error) setOrders(data);
-    setLoading(false);
-  };
+  setLoading(true);
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("status", "pending")
+    .order("created_at", { ascending: false });
+  if (!error) {
+    setOrders(data);
+    if (!soundRef.current && vehicleRef.current) {
+      setShowSoundPrompt(true);
+    }
+  }
+  setLoading(false);
+};
 
   const fetchHistory = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -145,7 +150,12 @@ export default function DriverDashboard() {
             ].map((v) => (
               <button
                 key={v.name}
-                onClick={() => setSelectedVehicle(v.name)}
+                onClick={() => {
+                  setSelectedVehicle(v.name);
+                  if (!soundRef.current) {
+                  setShowSoundPrompt(true);
+                }
+              }}
                 className="bg-gray-50 p-5 rounded-[32px] shadow-sm border-2 border-gray-100 active:scale-95 active:bg-yellow-400 transition-all flex items-center gap-6 group"
               >
                 <div className="w-16 h-16 flex-shrink-0 bg-white rounded-2xl p-2 shadow-sm group-active:rotate-12 transition-transform">
@@ -173,7 +183,36 @@ export default function DriverDashboard() {
   // --- ЭКРАН 2: РАБОЧИЙ КАБИНЕТ ---
   return (
     <div className="bg-gray-100 min-h-screen pb-24">
-
+    {showSoundPrompt && (
+  <div className="fixed top-4 left-4 right-4 z-50 max-w-lg mx-auto">
+    <div className="bg-black text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3">
+      <div>
+        <p className="font-black text-sm uppercase">🔔 Включить звук?</p>
+        <p className="text-[10px] text-gray-400 mt-0.5">Чтобы слышать новые заказы</p>
+      </div>
+      <div className="flex gap-2">
+        <button
+          onClick={() => {
+            const unlock = new SpeechSynthesisUtterance("");
+            window.speechSynthesis.speak(unlock);
+            setIsSoundEnabled(true);
+            soundRef.current = true;
+            setShowSoundPrompt(false);
+          }}
+          className="bg-yellow-400 text-black px-3 py-2 rounded-xl font-black text-xs uppercase"
+        >
+          🔊 Да
+        </button>
+        <button
+          onClick={() => setShowSoundPrompt(false)}
+          className="bg-gray-700 text-white px-3 py-2 rounded-xl font-black text-xs uppercase"
+        >
+          Нет
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       {/* Шапка */}
       <div className="px-4 pt-4 max-w-lg mx-auto mb-4">
         <div className="bg-white p-4 rounded-3xl shadow-sm flex items-center justify-between">
@@ -188,13 +227,20 @@ export default function DriverDashboard() {
             </button>
           </div>
           <button
-            onClick={() => setIsSoundEnabled(!isSoundEnabled)}
-            className={`px-4 py-2 rounded-2xl font-black text-[10px] uppercase transition-all ${
-              isSoundEnabled ? "bg-green-500 text-white shadow-lg shadow-green-200" : "bg-gray-200 text-gray-400"
-            }`}
-          >
-            {isSoundEnabled ? "🔊 Голос ВКЛ" : "🔇 Без звука"}
-          </button>
+      onClick={() => {
+       if (!isSoundEnabled) {
+      const unlock = new SpeechSynthesisUtterance("");
+      window.speechSynthesis.speak(unlock);
+      }
+      setIsSoundEnabled(!isSoundEnabled);
+      soundRef.current = !isSoundEnabled;
+      }}
+      className={`px-4 py-2 rounded-2xl font-black text-[10px] uppercase transition-all ${
+       isSoundEnabled ? "bg-green-500 text-white shadow-lg shadow-green-200" : "bg-gray-200 text-gray-400"
+       }`}
+      >
+       {isSoundEnabled ? "🔊 Голос ВКЛ" : "🔇 Без звука"}
+        </button>
         </div>
       </div>
 
