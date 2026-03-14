@@ -13,6 +13,49 @@ export default function DriverDashboard() {
   const vehicleRef = useRef<string | null>(null);
   const soundRef = useRef(false);
 
+  const VAPID_PUBLIC_KEY = "BIVIlqUOLuf5OtutgoSh2erD0WDkkLVVBYuF0Zwm5_AvMA_XrdGtR3cBgao6zm6RyYIXpZ49FXM40I-3hGJ0uCk";
+
+const subscribeToPush = async () => {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+  try {
+    const reg = await navigator.serviceWorker.register("/sw.js");
+    await navigator.serviceWorker.ready;
+    const existing = await reg.pushManager.getSubscription();
+    if (existing) return existing;
+    const subscription = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: VAPID_PUBLIC_KEY,
+    });
+    return subscription;
+  } catch (err) {
+    console.error("Push подписка не удалась:", err);
+  }
+};
+
+const sendPushNotification = async (order: any) => {
+  if (order.car_type !== vehicleRef.current) return;
+  try {
+    const subscription = await subscribeToPush();
+    if (!subscription) return;
+    await fetch("https://fprhprgmdmtgjpokzpyp.supabase.co/functions/v1/push-notification", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        subscription,
+        title: "🚖 Новый заказ!",
+        body: `${order.from_address} → ${order.price} ₸`,
+      }),
+    });
+  } catch (err) {
+    console.error("Ошибка отправки push:", err);
+  }
+};
+
+useEffect(() => {
+  const savedVehicle = localStorage.getItem("driver_selected_vehicle");
+  if (savedVehicle) setSelectedVehicle(savedVehicle);
+}, []);
+
   useEffect(() => {
     const savedVehicle = localStorage.getItem("driver_selected_vehicle");
     if (savedVehicle) setSelectedVehicle(savedVehicle);
@@ -49,6 +92,7 @@ export default function DriverDashboard() {
         if (payload.eventType === "INSERT") {
           setOrders((prev) => [payload.new, ...prev]);
           speakOrder(payload.new);
+          sendPushNotification(payload.new);
         } else if (payload.eventType === "UPDATE") {
           if (payload.new.status !== "pending") {
             setOrders((prev) => prev.filter((order) => order.id !== payload.new.id));
