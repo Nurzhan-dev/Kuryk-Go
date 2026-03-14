@@ -41,13 +41,13 @@ function Cars() {
                 });
               }
             }}  
-            className={`flex flex-col items-center justify-between flex-shrink-0 w-20 h-24 p-2 border rounded-2xl cursor-pointer transition-all
+            className={`flex flex-col items-center justify-between flex-shrink-0 w-28 h-30 p-2 border rounded-2xl cursor-pointer transition-all
             ${selectedCar?.name === item.name 
               ? "border-black border-2 bg-yellow-500 shadow-lg" 
               : "border-gray-200 bg-white hover:border-yellow-300"}`}
           > 
             {/* Vehicle icon */}
-            <div className="w-full h-12 flex items-center justify-center overflow-hidden">
+            <div className="w-full h-20 flex items-center justify-center overflow-hidden">
               <img
                 src={item.image}
                 alt={item.name}
@@ -57,7 +57,7 @@ function Cars() {
       
             {/* Vehicle name and price */}
             <div className="w-full text-center">
-              <h2 className="text-[9px] font-black text-gray-600 uppercase tracking-widest line-clamp-1">
+              <h2 className="text-[9px] font-black text-gray-600 uppercase tracking-widest leading-tight">
                 {item.name}
               </h2>
               <div className="flex items-baseline justify-center gap-0.5 mt-0.5">
