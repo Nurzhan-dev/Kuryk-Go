@@ -11,9 +11,12 @@ function CheckoutForm() {
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
   const [phone, setPhone] = useState("");
-  const { sourceText } = useContext(SourceTextContext);
-  const { destText } = useContext(DestTextContext);
-  const { selectedCar } = useContext(SelectedCarContext);
+  const sourceContext = useContext(SourceTextContext);
+  const destContext = useContext(DestTextContext);
+  const carContext = useContext(SelectedCarContext);
+  const sourceText = sourceContext?.sourceText ?? "";
+  const destText = destContext?.destText ?? "";
+  const selectedCar = carContext?.selectedCar ?? null;
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
