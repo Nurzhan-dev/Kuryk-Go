@@ -39,7 +39,10 @@ const sendPushNotification = async (order: any) => {
     if (!subscription) return;
     await fetch("https://fprhprgmdmtgjpokzpyp.supabase.co/functions/v1/push-notification", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcmhwcmdtZG10Z2pwb2t6cHlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEwMzI0MzQsImV4cCI6MjA1NjYwODQzNH0.yRa3De8bMFMHHpNzBFvRHMEW3pBBaW3_ij4V2GBjPKY",
+      },
       body: JSON.stringify({
         subscription,
         title: "🚖 Новый заказ!",
