@@ -85,26 +85,21 @@ function CheckoutForm() {
 
         {/* Тип техники — только для Спецтехники */}
         {isSpecial && (
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-gray-500 uppercase">Тип техники</label>
-            <div className="grid grid-cols-3 gap-2">
-              {EQUIPMENT_TYPES.map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => setEquipmentType(type)}
-                  className={`px-2 py-2 rounded-xl border-2 text-[10px] font-black uppercase transition-all ${
-                    equipmentType === type
-                      ? "border-black bg-yellow-400 text-black"
-                      : "border-gray-200 bg-white text-gray-600"
-                  }`}
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+    <div className="flex flex-col gap-1">
+    <label className="text-[10px] font-bold text-gray-500 uppercase">Тип техники</label>
+    <select
+      value={equipmentType}
+      onChange={(e) => setEquipmentType(e.target.value)}
+      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-black outline-none focus:border-gray-600 transition-all text-sm"
+      required
+     >
+      <option value="">Выберите тип техники</option>
+      {EQUIPMENT_TYPES.map((type) => (
+        <option key={type} value={type}>{type}</option>
+      ))}
+      </select>
+     </div>
+    )}
 
         {/* Адрес откуда — скрыт для водовоза */}
         {!isWater && (
