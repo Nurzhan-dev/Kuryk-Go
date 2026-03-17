@@ -13,6 +13,15 @@ const EQUIPMENT_TYPES = [
   "Трактор",
 ];
 
+const GAZELLE_ROUTES = [
+  { label: "Внутри поселка", price: 3000 },
+  { label: "Между поселками", price: 6000 },
+  { label: "Межгород (Актау)", price: 15000 },
+];
+
+const WATER_PRICE_PER_CUB = 420;
+const WATER_VOLUMES = [5, 10, 15, 20];
+
 function CheckoutForm() {
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
@@ -20,6 +29,8 @@ function CheckoutForm() {
   const [fromAddress, setFromAddress] = useState("");
   const [toAddress, setToAddress] = useState("");
   const [equipmentType, setEquipmentType] = useState("");
+  const [gazelleRoute, setGazelleRoute] = useState<typeof GAZELLE_ROUTES[0] | null>(null);
+  const [waterVolume, setWaterVolume] = useState<number | null>(null);
 
   const carContext = useContext(SelectedCarContext);
   const selectedCar = carContext?.selectedCar ?? null;
@@ -27,9 +38,27 @@ function CheckoutForm() {
 
   const isWater = carType === "Водовоз";
   const isSpecial = carType === "Спецтехника";
+  const isGazelle = carType === "Газель";
+
+  // Считаем финальную цену
+  const finalPrice = isGazelle
+    ? gazelleRoute?.price ?? selectedCar?.amount
+    : isWater
+    ? waterVolume ? waterVolume * WATER_PRICE_PER_CUB : selectedCar?.amount
+    : selectedCar?.amount;
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+
+    if (isGazelle && !gazelleRoute) {
+      alert("Выберите маршрут!");
+      return;
+    }
+
+    if (isWater && !waterVolume) {
+      alert("Выберите объём воды!");
+      return;
+    }
 
     if (!isWater && !fromAddress) {
       alert("Введите адрес откуда!");
@@ -55,8 +84,12 @@ function CheckoutForm() {
 
     const orderData = {
       from_address: isWater ? "Водовоз" : fromAddress,
-      to_address: isSpecial ? `${toAddress} (${equipmentType})` : toAddress,
-      price: selectedCar?.amount,
+      to_address: isSpecial
+        ? `${toAddress} (${equipmentType})`
+        : isWater
+        ? `${toAddress} (${waterVolume} куб)`
+        : toAddress,
+      price: finalPrice,
       car_type: carType,
       payment_method: paymentMethod,
       status: "pending",
@@ -71,6 +104,8 @@ function CheckoutForm() {
       setToAddress("");
       setEquipmentType("");
       setPhone("");
+      setGazelleRoute(null);
+      setWaterVolume(null);
     } catch (error: any) {
       console.error("Ошибка при отправке заказа");
       alert("Ошибка при отправке: " + error.message);
@@ -83,23 +118,73 @@ function CheckoutForm() {
     <div className="w-full">
       <form onSubmit={handleSubmit} className="space-y-4">
 
-        {/* Тип техники — только для Спецтехники */}
+        {/* ГАЗЕЛЬ — выбор маршрута */}
+        {isGazelle && (
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-bold text-gray-500 uppercase">Маршрут</label>
+            <div className="grid grid-cols-1 gap-2">
+              {GAZELLE_ROUTES.map((route) => (
+                <button
+                  key={route.label}
+                  type="button"
+                  onClick={() => setGazelleRoute(route)}
+                  className={`px-4 py-3 rounded-xl border-2 text-sm font-bold transition-all flex justify-between items-center ${
+                    gazelleRoute?.label === route.label
+                      ? "border-black bg-yellow-400 text-black"
+                      : "border-gray-200 bg-white text-gray-600"
+                  }`}
+                >
+                  <span>{route.label}</span>
+                  <span className="font-black text-green-600">{route.price.toLocaleString()} ₸</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ВОДОВОЗ — выбор объёма */}
+        {isWater && (
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-bold text-gray-500 uppercase">Объём воды</label>
+            <div className="grid grid-cols-4 gap-2">
+              {WATER_VOLUMES.map((vol) => (
+                <button
+                  key={vol}
+                  type="button"
+                  onClick={() => setWaterVolume(vol)}
+                  className={`py-3 rounded-xl border-2 text-sm font-black transition-all flex flex-col items-center gap-0.5 ${
+                    waterVolume === vol
+                      ? "border-black bg-yellow-400 text-black"
+                      : "border-gray-200 bg-white text-gray-600"
+                  }`}
+                >
+                  <span>{vol} куб</span>
+                  <span className="text-[10px] font-bold text-green-600">
+                    {(vol * WATER_PRICE_PER_CUB).toLocaleString()} ₸
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* СПЕЦТЕХНИКА — тип техники */}
         {isSpecial && (
-    <div className="flex flex-col gap-1">
-    <label className="text-[10px] font-bold text-gray-500 uppercase">Тип техники</label>
-    <select
-      value={equipmentType}
-      onChange={(e) => setEquipmentType(e.target.value)}
-      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-black outline-none focus:border-gray-600 transition-all text-sm"
-      required
-     >
-      <option value="">Выберите тип техники</option>
-      {EQUIPMENT_TYPES.map((type) => (
-        <option key={type} value={type}>{type}</option>
-      ))}
-      </select>
-     </div>
-    )}
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-bold text-gray-500 uppercase">Тип техники</label>
+            <select
+              value={equipmentType}
+              onChange={(e) => setEquipmentType(e.target.value)}
+              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-black outline-none focus:border-gray-600 transition-all text-sm"
+              required
+            >
+              <option value="">Выберите тип техники</option>
+              {EQUIPMENT_TYPES.map((type) => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Адрес откуда — скрыт для водовоза */}
         {!isWater && (
@@ -187,6 +272,14 @@ function CheckoutForm() {
           </button>
         </div>
 
+        {/* Итоговая цена */}
+        {finalPrice && (
+          <div className="bg-gray-50 rounded-2xl px-4 py-3 flex justify-between items-center">
+            <span className="text-[10px] font-bold text-gray-400 uppercase">Итого</span>
+            <span className="font-black text-xl text-green-600">{Number(finalPrice).toLocaleString()} ₸</span>
+          </div>
+        )}
+
         {/* Кнопка заказа */}
         <button
           type="submit"
@@ -203,4 +296,4 @@ function CheckoutForm() {
 }
 
 export default CheckoutForm;
-        
+    
