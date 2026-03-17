@@ -1,6 +1,5 @@
 "use client";
 import React, { useContext, useState, useEffect } from "react";
-import AutocompleteAddress from "./AutocompleteAddress";
 import Cars from "./Cars";
 import { SelectedCarContext } from "@/context/SelectedCarContext";
 import CheckoutForm from "../payment/CheckoutForm";
@@ -23,7 +22,6 @@ function Booking() {
           Ваш универсальный <br /> агрегатор перевозок
         </h2>
         <div className="space-y-5">
-          <AutocompleteAddress />
           <Cars />
           {!selectedCar?.amount && (
             <p className="text-center text-gray-400 text-sm mt-4">
