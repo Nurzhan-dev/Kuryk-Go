@@ -42,11 +42,11 @@ function Booking() {
       )}
 
       {/* Bottom Sheet — панель */}
-      <div
-        className={`fixed left-0 right-0 bottom-0 z-50 bg-white rounded-t-[32px] shadow-2xl transition-transform duration-300 ease-in-out ${
-          showSheet ? "translate-y-0" : "translate-y-full"
-        }`}
-      >
+       <div
+       className={`fixed left-0 right-0 bottom-0 z-50 bg-white rounded-t-[32px] shadow-2xl transition-transform duration-300 ease-in-out max-h-[85vh] overflow-y-auto ${
+       showSheet ? "translate-y-0" : "translate-y-full"
+       }`}
+       >
         {/* Ручка */}
         <div className="flex justify-center pt-3 pb-2">
           <div className="w-10 h-1 bg-gray-300 rounded-full" />
