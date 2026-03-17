@@ -2,7 +2,7 @@
 
 [Демо приложения](https://kuryk-go.vercel.app/)
 
-![Kuryk Go Banner](https://github.com/Nurzhan-dev/Kuryk-Go/public/Снимок экрана.png)
+![Kuryk Banner](https://raw.githubusercontent.com/Nurzhan-dev/Kuryk-Go/main/public/screenshot.png)
 
 ## О проекте
 
