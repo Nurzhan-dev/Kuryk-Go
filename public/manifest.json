@@ -1,22 +1,24 @@
 {
-  "name": "Kuryk Go — Кабинет водителя",
+  "name": "Kuryk Go — Перевозки твоего поселка",
   "short_name": "Kuryk Go",
-  "description": "Кабинет водителя Kuryk Go",
-  "start_url": "/driver",
+  "description": "Ваш универсальный агрегатор перевозок",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#facc15",
   "orientation": "portrait",
   "icons": [
-    {
-      "src": "/logo.jpg",
-      "sizes": "192x192",
-      "type": "image/jpeg"
-    },
-    {
-      "src": "/logo.jpg",
-      "sizes": "512x512",
-      "type": "image/jpeg"
-    }
-  ]
+  {
+    "src": "/logo.jpg",
+    "sizes": "192x192",
+    "type": "image/jpeg",
+    "purpose": "any maskable"
+  },
+  {
+    "src": "/logo.jpg",
+    "sizes": "512x512",
+    "type": "image/jpeg",
+    "purpose": "any maskable"
+  }
+ ]
 }

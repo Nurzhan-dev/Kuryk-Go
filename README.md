@@ -1,8 +1,8 @@
 # Kuryk Go - Универсальный Агрегатор Перевозок
 
-[Демо приложения](https://-app-projects.vercel.app/)
+[Демо приложения](https://kuryk-go.vercel.app/)
 
-![Kuryk Go Banner](https://github.com/kirankattii/taxi-booking-app/assets/139916130/1231bbb1-94f8-4da8-a81c-dd17557d1696)
+![Kuryk Go Banner](https://github.com/Nurzhan-dev/Kuryk-Go/public/Снимок экрана.png)
 
 ## О проекте
 
@@ -12,9 +12,8 @@
 
 - 🗺️ **Интерактивная карта** - Реальная отслеживание местоположения пользователя и маршрутов с использованием Leaflet
 - 🚗 **Выбор транспорта** - Широкий выбор типов автомобилей для различных потребностей
-- 💳 **Безопасные платежи** - Интеграция со Stripe для безопасной обработки платежей
 - 🔐 **Аутентификация** - Система регистрации и входа с использованием Supabase
-- 👤 **Роли пользователей** - Поддержка разных ролей (пассажир, водитель)
+- 👤 **Роли пользователей** - Поддержка ролей (водитель)
 - 📍 **Маршрутизация** - Автоматический расчет маршрутов между точками
 - 🎨 **Современный дизайн** - Адаптивный интерфейс с использованием Tailwind CSS
 
@@ -35,12 +34,6 @@
 - **Supabase** - BaaS платформа для аутентификации и базы данных
   - `@supabase/supabase-js` - JavaScript клиент
   - `@supabase/ssr` - Поддержка Server-Side Rendering
-
-### Платежи
-- **Stripe** - Интеграция платежной системы
-  - `@stripe/react-stripe-js` - React компоненты
-  - `@stripe/stripe-js` - JavaScript SDK
-  - `stripe` - Node.js SDK
 
 ### DevDependencies
 - **PostCSS** - Инструмент для преобразования CSS
@@ -122,8 +115,6 @@ kuryk-go/
 ```env
 NEXT_PUBLIC_SUPABASE_URL=ваш_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=ваш_supabase_key
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=ваш_stripe_key
-STRIPE_SECRET_KEY=ваш_stripe_secret
 ```
 
 ## 📝 Редактирование
@@ -142,7 +133,7 @@ STRIPE_SECRET_KEY=ваш_stripe_secret
 
 ## 🚢 Развертывание
 
-Самый простой способ развернуть приложение Kuryk Go - использовать [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) от создателей Next.js.
+Самый простой способ развернуть приложение Kuryk Go - использовать [Vercel Platform](https://vercel.com) от создателей Next.js.
 
 Проверьте [документацию по развертыванию Next.js](https://nextjs.org/docs/deployment) для более подробной информации.
 
