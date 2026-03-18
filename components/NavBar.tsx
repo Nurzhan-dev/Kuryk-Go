@@ -47,7 +47,7 @@ function NavBar() {
   };
 
   return (
-    <nav className="relative w-full h-44 md:h-52 overflow-hidden sticky top-0 z-50 shadow-sm">
+    <nav className="relative w-full h-28 md:h-36 overflow-hidden sticky top-0 z-50 shadow-sm">
       
       {/* 1. СЛОЙ БАННЕРА */}
       <div className="absolute inset-0 z-0">
@@ -61,7 +61,7 @@ function NavBar() {
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="absolute inset-x-0 bottom-0 h-12 md:h-16 bg-gradient-to-t from-white via-white/60 to-transparent"></div>
       </div>
-      <div className="relative z-10 h-full flex justify-between items-center px-2 md:px-4">
+      <div className="relative z-10 h-full flex justify-between items-start pt-2 px-2 md:px-4">
         
         {/* ЛЕВАЯ ЧАСТЬ: ЛОГОТИП И КНОПКА */}
       <div className="flex items-center gap-2">
