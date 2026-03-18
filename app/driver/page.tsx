@@ -255,7 +255,7 @@ const sendPushNotification = async (order: any) => {
       </button>
     </div>
   );
- }
+}
   const filteredOrders = orders.filter((o) => {
   if (o.car_type !== selectedVehicle) return false;
   if (selectedVehicle === "Легковой" && selectedRoute) {
@@ -300,47 +300,49 @@ const sendPushNotification = async (order: any) => {
   </div>
 )}
       {/* Шапка */}
-      <div>
+<div className="px-4 pt-4 max-w-lg mx-auto mb-4">
+  <div className="bg-white p-4 rounded-3xl shadow-sm flex items-center justify-between">
+    <div>
       <p className="text-[10px] font-bold text-gray-400 uppercase leading-none">Режим работы</p>
       <h2 className="font-black uppercase italic text-lg text-black">{selectedVehicle}</h2>
       {selectedRoute && (
-      <p className="text-[10px] font-bold text-yellow-500 uppercase">{selectedRoute}</p>
+        <p className="text-[10px] font-bold text-yellow-500 uppercase">{selectedRoute}</p>
       )}
       <button
-          onClick={() => setSelectedVehicle(null)}
-          className="text-[9px] font-bold text-blue-500 uppercase underline"
-          >
-          Сменить авто
-          </button>
-       {selectedVehicle === "Легковой" && (
-       <button
-       onClick={() => {
-       setSelectedRoute(null);
-       localStorage.removeItem("driver_selected_route");
-       }}
-        className="text-[9px] font-bold text-orange-500 uppercase underline"
+        onClick={() => setSelectedVehicle(null)}
+        className="text-[9px] font-bold text-blue-500 uppercase underline"
+      >
+        Сменить авто
+      </button>
+      {selectedVehicle === "Легковой" && (
+        <button
+          onClick={() => {
+            setSelectedRoute(null);
+            localStorage.removeItem("driver_selected_route");
+          }}
+          className="text-[9px] font-bold text-orange-500 uppercase underline ml-2"
         >
           Сменить маршрут
-          </button>
-       )}
-       </div>
-          <button
+        </button>
+      )}
+    </div>
+    <button
       onClick={() => {
-       if (!isSoundEnabled) {
-      const unlock = new SpeechSynthesisUtterance("");
-      window.speechSynthesis.speak(unlock);
-      }
-      setIsSoundEnabled(!isSoundEnabled);
-      soundRef.current = !isSoundEnabled;
+        if (!isSoundEnabled) {
+          const unlock = new SpeechSynthesisUtterance("");
+          window.speechSynthesis.speak(unlock);
+        }
+        setIsSoundEnabled(!isSoundEnabled);
+        soundRef.current = !isSoundEnabled;
       }}
       className={`px-4 py-2 rounded-2xl font-black text-[10px] uppercase transition-all ${
-       isSoundEnabled ? "bg-green-500 text-white shadow-lg shadow-green-200" : "bg-gray-200 text-gray-400"
-       }`}
-      >
-       {isSoundEnabled ? "🔊 Голос ВКЛ" : "🔇 Без звука"}
-        </button>
-        </div>
-      </div>
+        isSoundEnabled ? "bg-green-500 text-white shadow-lg shadow-green-200" : "bg-gray-200 text-gray-400"
+      }`}
+    >
+      {isSoundEnabled ? "🔊 Голос ВКЛ" : "🔇 Без звука"}
+    </button>
+  </div>
+</div>
 
       {/* КОНТЕНТ ВКЛАДОК */}
       <div className="px-4 max-w-lg mx-auto">
