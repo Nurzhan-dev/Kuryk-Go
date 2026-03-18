@@ -5,7 +5,7 @@ import { SelectedCarContext } from "@/context/SelectedCarContext";
 import CheckoutForm from "../payment/CheckoutForm";
 
 function Booking() {
-  const { selectedCar, setSelectedCar } = useContext(SelectedCarContext);
+  const { selectedCar, setSelectedCar, finalPrice } = useContext(SelectedCarContext);
   const [showSheet, setShowSheet] = useState(false);
 
   useEffect(() => {
@@ -74,7 +74,7 @@ function Booking() {
 
           <div className="text-right">
             <p className="text-[10px] font-bold text-gray-400 uppercase leading-none">Цена</p>
-            <p className="font-black text-lg text-green-600">{selectedCar?.amount} ₸</p>
+            <p className="font-black text-lg text-green-600"> {finalPrice ? Number(finalPrice).toLocaleString() : selectedCar?.amount} ₸</p>
           </div>
         </div>
 
