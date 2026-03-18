@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { SelectedCarContext } from "@/context/SelectedCarContext";
 
@@ -35,6 +35,7 @@ function CheckoutForm() {
 
   const carContext = useContext(SelectedCarContext);
   const selectedCar = carContext?.selectedCar ?? null;
+  const setFinalPrice = carContext?.setFinalPrice;
   const carType = selectedCar?.name ?? "";
 
   const isTaxi = carType === "Легковой";
@@ -49,7 +50,9 @@ function CheckoutForm() {
     : isWater
     ? waterVolume ? waterVolume * WATER_PRICE_PER_CUB : selectedCar?.amount
     : selectedCar?.amount;
-
+    useEffect(() => {
+    setFinalPrice?.(finalPrice ?? null);
+    }, [finalPrice]);
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
