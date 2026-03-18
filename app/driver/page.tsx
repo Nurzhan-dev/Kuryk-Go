@@ -9,6 +9,7 @@ export default function DriverDashboard() {
   const [activeTab, setActiveTab] = useState<"orders" | "active" | "completed">("orders");
   const [showSoundPrompt, setShowSoundPrompt] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
+  const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
   const [isSoundEnabled, setIsSoundEnabled] = useState(false);
   const vehicleRef = useRef<string | null>(null);
   const soundRef = useRef(false);
@@ -45,7 +46,7 @@ const sendPushNotification = async (order: any) => {
       },
       body: JSON.stringify({
         subscription,
-        title: "🚖 Новый заказ!",
+        title: "У вас новый заказ!",
         body: `${order.from_address} → ${order.price} ₸`,
       }),
     });
@@ -54,15 +55,12 @@ const sendPushNotification = async (order: any) => {
   }
 };
 
-useEffect(() => {
-  const savedVehicle = localStorage.getItem("driver_selected_vehicle");
-  if (savedVehicle) setSelectedVehicle(savedVehicle);
-}, []);
-
   useEffect(() => {
-    const savedVehicle = localStorage.getItem("driver_selected_vehicle");
-    if (savedVehicle) setSelectedVehicle(savedVehicle);
-  }, []);
+  const savedVehicle = localStorage.getItem("driver_selected_vehicle");
+  const savedRoute = localStorage.getItem("driver_selected_route");
+  if (savedVehicle) setSelectedVehicle(savedVehicle);
+  if (savedRoute) setSelectedRoute(savedRoute);
+ }, []);
 
   useEffect(() => {
     vehicleRef.current = selectedVehicle;
@@ -71,6 +69,7 @@ useEffect(() => {
       localStorage.setItem("driver_selected_vehicle", selectedVehicle);
     } else {
       localStorage.removeItem("driver_selected_vehicle");
+      setSelectedRoute(null);
     }
   }, [selectedVehicle, isSoundEnabled]);
 
@@ -222,8 +221,48 @@ useEffect(() => {
       </div>
     );
   }
-
-  const filteredOrders = orders.filter((o) => o.car_type === selectedVehicle);
+  if (selectedVehicle === "Легковой" && !selectedRoute) {
+  return (
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-6">
+      <h1 className="text-3xl font-black uppercase italic mb-10 text-center leading-tight text-black tracking-tighter">
+        Какой маршрут <br />
+        вы <span className="text-yellow-500">обслуживаете?</span>
+      </h1>
+      <div className="grid gap-4 w-full max-w-sm">
+        {[
+          { name: "По поселку", desc: "Внутренние поездки" },
+          { name: "Попутчик (межгород)", desc: "1 место — 1300 ₸" },
+          { name: "Полный салон (межгород)", desc: "Весь салон — 5200 ₸" },
+          ].map((r) => (
+          <button
+            key={r.name}
+            onClick={() => {
+            setSelectedRoute(r.name);
+            localStorage.setItem("driver_selected_route", r.name);
+            }}
+            className="bg-white p-5 rounded-[32px] shadow-sm border-2 border-gray-100 active:scale-95 active:bg-yellow-400 transition-all text-left"
+          >
+            <span className="font-black uppercase text-lg block leading-none text-black">{r.name}</span>
+            <span className="text-[11px] text-gray-400 font-bold uppercase tracking-[1px] mt-1 block">{r.desc}</span>
+          </button>
+        ))}
+      </div>
+      <button
+        onClick={() => setSelectedVehicle(null)}
+        className="mt-8 text-[11px] font-bold text-gray-400 uppercase underline"
+      >
+        ← Назад
+      </button>
+    </div>
+  );
+ }
+  const filteredOrders = orders.filter((o) => {
+  if (o.car_type !== selectedVehicle) return false;
+  if (selectedVehicle === "Легковой" && selectedRoute) {
+    return o.route_type === selectedRoute;
+  }
+  return true;
+  });
   const activeOrders = history.filter((i) => i.status === "accepted");
   const completedOrders = history.filter((i) => i.status === "completed");
 
@@ -261,18 +300,30 @@ useEffect(() => {
   </div>
 )}
       {/* Шапка */}
-      <div className="px-4 pt-4 max-w-lg mx-auto mb-4">
-        <div className="bg-white p-4 rounded-3xl shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-[10px] font-bold text-gray-400 uppercase leading-none">Режим работы</p>
-            <h2 className="font-black uppercase italic text-lg text-black">{selectedVehicle}</h2>
-            <button
-              onClick={() => setSelectedVehicle(null)}
-              className="text-[9px] font-bold text-blue-500 uppercase underline"
-            >
-              Сменить авто
-            </button>
-          </div>
+      <div>
+      <p className="text-[10px] font-bold text-gray-400 uppercase leading-none">Режим работы</p>
+      <h2 className="font-black uppercase italic text-lg text-black">{selectedVehicle}</h2>
+      {selectedRoute && (
+      <p className="text-[10px] font-bold text-yellow-500 uppercase">{selectedRoute}</p>
+      )}
+      <button
+          onClick={() => setSelectedVehicle(null)}
+          className="text-[9px] font-bold text-blue-500 uppercase underline"
+          >
+          Сменить авто
+          </button>
+       {selectedVehicle === "Легковой" && (
+       <button
+       onClick={() => {
+       setSelectedRoute(null);
+       localStorage.removeItem("driver_selected_route");
+       }}
+        className="text-[9px] font-bold text-orange-500 uppercase underline"
+        >
+          Сменить маршрут
+          </button>
+       )}
+       </div>
           <button
       onClick={() => {
        if (!isSoundEnabled) {
