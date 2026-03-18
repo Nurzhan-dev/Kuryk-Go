@@ -5,12 +5,12 @@ import { SelectedCarContext } from "@/context/SelectedCarContext";
 
 type PaymentMethod = "cash" | "kaspi" | "halyk";
 
-const EQUIPMENT_TYPES = [
-  "Эвакуатор",
-  "Погрузчик",
-  "Самосвал",
-  "Ассенизатор",
-  "Трактор",
+const EQUIPMENT_TYPES = ["Эвакуатор", "Погрузчик", "Самосвал", "Ассенизатор", "Трактор"];
+
+const TAXI_ROUTES = [
+  { label: "По поселку", price: 300 },
+  { label: "Попутчик (межгород)", price: 1300 },
+  { label: "Полный салон (межгород)", price: 5200 },
 ];
 
 const GAZELLE_ROUTES = [
@@ -29,6 +29,7 @@ function CheckoutForm() {
   const [fromAddress, setFromAddress] = useState("");
   const [toAddress, setToAddress] = useState("");
   const [equipmentType, setEquipmentType] = useState("");
+  const [taxiRoute, setTaxiRoute] = useState<typeof TAXI_ROUTES[0] | null>(null);
   const [gazelleRoute, setGazelleRoute] = useState<typeof GAZELLE_ROUTES[0] | null>(null);
   const [waterVolume, setWaterVolume] = useState<number | null>(null);
 
@@ -36,12 +37,14 @@ function CheckoutForm() {
   const selectedCar = carContext?.selectedCar ?? null;
   const carType = selectedCar?.name ?? "";
 
+  const isTaxi = carType === "Легковой";
+  const isGazelle = carType === "Газель";
   const isWater = carType === "Водовоз";
   const isSpecial = carType === "Спецтехника";
-  const isGazelle = carType === "Газель";
 
-  // Считаем финальную цену
-  const finalPrice = isGazelle
+  const finalPrice = isTaxi
+    ? taxiRoute?.price ?? selectedCar?.amount
+    : isGazelle
     ? gazelleRoute?.price ?? selectedCar?.amount
     : isWater
     ? waterVolume ? waterVolume * WATER_PRICE_PER_CUB : selectedCar?.amount
@@ -50,35 +53,15 @@ function CheckoutForm() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (isGazelle && !gazelleRoute) {
-      alert("Выберите маршрут!");
-      return;
+    if (isTaxi && !taxiRoute) { alert("Выберите маршрут!"); return; }
+    if (isGazelle && !gazelleRoute) { alert("Выберите маршрут!"); return; }
+    if (isWater && !waterVolume) { alert("Выберите объём воды!"); return; }
+    if (isSpecial && !equipmentType) { alert("Выберите тип техники!"); return; }
+    if (!isWater && (!isSpecial || equipmentType === "Эвакуатор") && !fromAddress) {
+      alert("Введите адрес откуда!"); return;
     }
-
-    if (isWater && !waterVolume) {
-      alert("Выберите объём воды!");
-      return;
-    }
-
-    if (!isWater && !fromAddress) {
-      alert("Введите адрес откуда!");
-      return;
-    }
-
-    if (!toAddress) {
-      alert("Введите адрес куда!");
-      return;
-    }
-
-    if (isSpecial && !equipmentType) {
-      alert("Выберите тип техники!");
-      return;
-    }
-
-    if (!phone || phone.length < 10) {
-      alert("Введите корректный номер телефона!");
-      return;
-    }
+    if (!toAddress) { alert("Введите адрес куда!"); return; }
+    if (!phone || phone.length < 10) { alert("Введите корректный номер телефона!"); return; }
 
     setLoading(true);
 
@@ -88,6 +71,8 @@ function CheckoutForm() {
         ? `${toAddress} (${equipmentType})`
         : isWater
         ? `${toAddress} (${waterVolume} куб)`
+        : isTaxi && taxiRoute?.label !== "По поселку"
+        ? `${toAddress} (${taxiRoute?.label})`
         : toAddress,
       price: finalPrice,
       car_type: carType,
@@ -104,6 +89,7 @@ function CheckoutForm() {
       setToAddress("");
       setEquipmentType("");
       setPhone("");
+      setTaxiRoute(null);
       setGazelleRoute(null);
       setWaterVolume(null);
     } catch (error: any) {
@@ -118,7 +104,31 @@ function CheckoutForm() {
     <div className="w-full">
       <form onSubmit={handleSubmit} className="space-y-4">
 
-        {/* ГАЗЕЛЬ — выбор маршрута */}
+        {/* ЛЕГКОВОЙ — маршрут */}
+        {isTaxi && (
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-bold text-gray-500 uppercase">Маршрут</label>
+            <div className="grid grid-cols-1 gap-2">
+              {TAXI_ROUTES.map((route) => (
+                <button
+                  key={route.label}
+                  type="button"
+                  onClick={() => setTaxiRoute(route)}
+                  className={`px-4 py-3 rounded-xl border-2 text-sm font-bold transition-all flex justify-between items-center ${
+                    taxiRoute?.label === route.label
+                      ? "border-black bg-yellow-400 text-black"
+                      : "border-gray-200 bg-white text-gray-600"
+                  }`}
+                >
+                  <span>{route.label}</span>
+                  <span className="font-black text-green-600">{route.price.toLocaleString()} ₸</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ГАЗЕЛЬ — маршрут */}
         {isGazelle && (
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-bold text-gray-500 uppercase">Маршрут</label>
@@ -142,7 +152,7 @@ function CheckoutForm() {
           </div>
         )}
 
-        {/* ВОДОВОЗ — выбор объёма */}
+        {/* ВОДОВОЗ — объём */}
         {isWater && (
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-bold text-gray-500 uppercase">Объём воды</label>
@@ -168,7 +178,7 @@ function CheckoutForm() {
           </div>
         )}
 
-        {/* СПЕЦТЕХНИКА — тип техники */}
+        {/* СПЕЦТЕХНИКА — тип */}
         {isSpecial && (
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-bold text-gray-500 uppercase">Тип техники</label>
@@ -176,7 +186,6 @@ function CheckoutForm() {
               value={equipmentType}
               onChange={(e) => setEquipmentType(e.target.value)}
               className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-black outline-none focus:border-gray-600 transition-all text-sm"
-              required
             >
               <option value="">Выберите тип техники</option>
               {EQUIPMENT_TYPES.map((type) => (
@@ -186,8 +195,8 @@ function CheckoutForm() {
           </div>
         )}
 
-        {/* Адрес откуда — скрыт для водовоза */}
-        {!isWater && (
+        {/* Откуда — скрыт для водовоза и спецтехники (кроме эвакуатора) */}
+        {!isWater && (!isSpecial || equipmentType === "Эвакуатор") && (
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-bold text-gray-500 uppercase">Откуда</label>
             <input
@@ -196,12 +205,11 @@ function CheckoutForm() {
               className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-black outline-none focus:border-gray-600 focus:ring-1 focus:ring-gray-300 transition-all text-sm"
               value={fromAddress}
               onChange={(e) => setFromAddress(e.target.value)}
-              required
             />
           </div>
         )}
 
-        {/* Адрес куда */}
+        {/* Куда */}
         <div className="flex flex-col gap-1">
           <label className="text-[10px] font-bold text-gray-500 uppercase">
             {isWater ? "Куда привезти воду" : "Куда"}
@@ -226,9 +234,7 @@ function CheckoutForm() {
             value={phone ? "+" + phone : ""}
             onChange={(e) => {
               let value = e.target.value.replace(/\D/g, "");
-              if (value && !value.startsWith("7")) {
-                value = "7" + value;
-              }
+              if (value && !value.startsWith("7")) value = "7" + value;
               setPhone(value.slice(0, 11));
             }}
             maxLength={12}
@@ -236,43 +242,26 @@ function CheckoutForm() {
           />
         </div>
 
-        {/* Способ оплаты */}
+        {/* Оплата */}
         <div className="grid grid-cols-3 gap-2">
-          <button
-            type="button"
-            onClick={() => setPaymentMethod("cash")}
-            className={`p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-1 ${
-              paymentMethod === "cash" ? "border-black bg-gray-100" : "border-gray-200 bg-white"
-            }`}
-          >
+          <button type="button" onClick={() => setPaymentMethod("cash")}
+            className={`p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-1 ${paymentMethod === "cash" ? "border-black bg-gray-100" : "border-gray-200 bg-white"}`}>
             <img src="/cash.png" alt="cash" className="w-6 h-6 object-contain" />
             <span className="text-[9px] font-bold uppercase text-gray-700">Наличка</span>
           </button>
-
-          <button
-            type="button"
-            onClick={() => setPaymentMethod("kaspi")}
-            className={`p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-1 ${
-              paymentMethod === "kaspi" ? "border-black bg-gray-100" : "border-gray-200 bg-white"
-            }`}
-          >
+          <button type="button" onClick={() => setPaymentMethod("kaspi")}
+            className={`p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-1 ${paymentMethod === "kaspi" ? "border-black bg-gray-100" : "border-gray-200 bg-white"}`}>
             <div className="w-5 h-5 bg-red-500 rounded flex items-center justify-center text-white text-[9px] font-bold">K</div>
             <span className="text-[9px] font-bold uppercase text-gray-700">Kaspi</span>
           </button>
-
-          <button
-            type="button"
-            onClick={() => setPaymentMethod("halyk")}
-            className={`p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-1 ${
-              paymentMethod === "halyk" ? "border-black bg-gray-100" : "border-gray-200 bg-white"
-            }`}
-          >
+          <button type="button" onClick={() => setPaymentMethod("halyk")}
+            className={`p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-1 ${paymentMethod === "halyk" ? "border-black bg-gray-100" : "border-gray-200 bg-white"}`}>
             <div className="w-5 h-5 bg-green-600 rounded flex items-center justify-center text-white text-[9px] font-bold">H</div>
             <span className="text-[9px] font-bold uppercase text-gray-700">Halyk</span>
           </button>
         </div>
 
-        {/* Итоговая цена */}
+        {/* Итого */}
         {finalPrice && (
           <div className="bg-gray-50 rounded-2xl px-4 py-3 flex justify-between items-center">
             <span className="text-[10px] font-bold text-gray-400 uppercase">Итого</span>
@@ -280,14 +269,11 @@ function CheckoutForm() {
           </div>
         )}
 
-        {/* Кнопка заказа */}
-        <button
-          type="submit"
-          disabled={loading}
+        {/* Кнопка */}
+        <button type="submit" disabled={loading}
           className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-base transition-all active:scale-95 ${
             loading ? "bg-gray-400 text-white cursor-not-allowed" : "bg-black text-white hover:bg-gray-900 shadow-lg"
-          }`}
-        >
+          }`}>
           {loading ? "Отправка..." : "Заказать"}
         </button>
       </form>
@@ -296,4 +282,3 @@ function CheckoutForm() {
 }
 
 export default CheckoutForm;
-    
