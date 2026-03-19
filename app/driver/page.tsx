@@ -265,7 +265,7 @@ const sendPushNotification = async (order: any) => {
   });
   const activeOrders = history.filter((i) => i.status === "accepted");
   const completedOrders = history.filter((i) => i.status === "completed");
-
+  const totalEarned = completedOrders.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
   // --- ЭКРАН 2: РАБОЧИЙ КАБИНЕТ ---
   return (
     <div className="bg-gray-100 min-h-screen pb-24">
@@ -452,6 +452,13 @@ const sendPushNotification = async (order: any) => {
         {/* ВКЛАДКА: ЗАВЕРШЁННЫЕ */}
         {activeTab === "completed" && (
           <div className="grid gap-3">
+            <div className="bg-white p-4 rounded-3xl shadow-sm flex justify-between items-center border-l-4 border-green-400">
+          <div>
+           <p className="text-[10px] font-bold text-gray-400 uppercase">Итого заработано</p>
+           <p className="text-[10px] font-bold text-gray-400 uppercase">{completedOrders.length} заказов</p>
+           </div>
+           <p className="font-black text-2xl text-green-600">{totalEarned.toLocaleString()} ₸</p>
+            </div>
             <h2 className="text-xs font-bold text-gray-400 uppercase ml-2 tracking-widest">
               ✅ Завершённые заказы ({completedOrders.length})
             </h2>
