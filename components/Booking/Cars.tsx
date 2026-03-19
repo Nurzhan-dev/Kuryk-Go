@@ -60,12 +60,9 @@ function Cars() {
               <h2 className="text-[9px] font-black text-gray-600 uppercase tracking-widest leading-tight">
                 {item.name}
               </h2>
-              <div className="flex items-baseline justify-center gap-0.5 mt-0.5">
-                <span className="text-[12px] font-black text-slate-900">
-                  {getCost(item.charges)}
-                </span>
-                <span className="text-[8px] font-bold text-gray-500">₸</span>
-              </div>
+              <p className="text-[8px] font-bold text-gray-400 uppercase leading-tight mt-0.5">
+                {item.description}
+             </p>
             </div>
           </div>
         ))}
