@@ -9,7 +9,7 @@ function Booking() {
   const [showSheet, setShowSheet] = useState(false);
 
   useEffect(() => {
-    if (selectedCar?.amount) {
+    if (selectedCar?.name) {
       setShowSheet(true);
     }
   }, [selectedCar]);
@@ -28,7 +28,7 @@ function Booking() {
         </h2>
         <div className="space-y-4">
           <Cars />
-          {!selectedCar?.amount && (
+          {!selectedCar?.name && (
             <p className="text-center text-gray-400 text-sm mt-2">
               Выберите тип транспорта, чтобы продолжить
             </p>
