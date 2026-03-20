@@ -32,7 +32,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-  if (user?.publicMetadata?.role === 'driver') {
+  if (user) {
     router.push('/driver');
   }
   }, [user]);

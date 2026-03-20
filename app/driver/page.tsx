@@ -69,7 +69,6 @@ const sendPushNotification = async (order: any) => {
       localStorage.setItem("driver_selected_vehicle", selectedVehicle);
     } else {
       localStorage.removeItem("driver_selected_vehicle");
-      setSelectedRoute(null);
     }
   }, [selectedVehicle, isSoundEnabled]);
 
@@ -306,8 +305,15 @@ const sendPushNotification = async (order: any) => {
       <p className="text-[10px] font-bold text-gray-400 uppercase leading-none">Режим работы</p>
       <h2 className="font-black uppercase italic text-lg text-black">{selectedVehicle}</h2>
       {selectedRoute && (
-        <p className="text-[10px] font-bold text-yellow-500 uppercase">{selectedRoute}</p>
-      )}
+  <div className="flex items-center gap-2 mt-0.5">
+    <img
+      src={selectedRoute === "По поселку" ? "/taxi-local.png" : "/taxi-intercity.png"}
+      alt={selectedRoute}
+      className="w-10 h-7 object-contain"
+    />
+    <p className="text-[10px] font-bold text-yellow-500 uppercase">{selectedRoute}</p>
+  </div>
+  )}
       <button
         onClick={() => setSelectedVehicle(null)}
         className="text-[9px] font-bold text-blue-500 uppercase underline"
