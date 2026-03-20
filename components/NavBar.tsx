@@ -52,7 +52,7 @@ function NavBar() {
       {/* 1. СЛОЙ БАННЕРА */}
       <div className="absolute inset-0 z-0">
         <img 
-          src="/banner.jpg" 
+          src="/banner.webp" 
           className="w-full h-full object-cover"
           style={{ objectPosition: 'center 73%' }} 
           alt="Banner"
