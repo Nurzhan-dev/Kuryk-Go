@@ -21,7 +21,7 @@ const GAZELLE_ROUTES = [
 
 const WATER_PRICE_PER_CUB = 420;
 const WATER_VOLUMES = [5, 10, 15, 20];
-
+const SPECIAL_PRICE = 8000;
 function CheckoutForm() {
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
@@ -44,12 +44,12 @@ function CheckoutForm() {
   const isSpecial = carType === "Спецтехника";
 
   const finalPrice = isTaxi
-    ? taxiRoute?.price ?? selectedCar?.amount
-    : isGazelle
-    ? gazelleRoute?.price ?? selectedCar?.amount
-    : isWater
-    ? waterVolume ? waterVolume * WATER_PRICE_PER_CUB : selectedCar?.amount
-    : selectedCar?.amount;
+  ? taxiRoute?.price ?? 0
+  : isGazelle
+  ? gazelleRoute?.price ?? 0
+  : isWater
+  ? waterVolume ? waterVolume * WATER_PRICE_PER_CUB : 0
+  : SPECIAL_PRICE;
     useEffect(() => {
     setFinalPrice?.(finalPrice ?? null);
     }, [finalPrice]);
