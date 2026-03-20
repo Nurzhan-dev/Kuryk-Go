@@ -9,17 +9,6 @@ function Cars() {
   // Достаем данные из нашего нового контекста
   const { selectedCar, setSelectedCar } = useContext(SelectedCarContext);
   const { directionData } = useContext(DirectionDataContext);
-
-  const getCost = (charges: any) => {
-    if (directionData?.routes?.[0]?.distance) {
-      return (
-        charges *
-        directionData.routes[0].distance *
-        0.000621371192
-      ).toFixed(0);
-    }
-    return charges; 
-  };
   
   return (
     <div className="mt-2">
@@ -33,11 +22,10 @@ function Cars() {
           <div
             key={index}
             onClick={() => {
-              const cost = getCost(item.charges);
               if (setSelectedCar) {
                 setSelectedCar({
                   name: item.name,
-                  amount: cost       
+                  amount: 0      
                 });
               }
             }}  
