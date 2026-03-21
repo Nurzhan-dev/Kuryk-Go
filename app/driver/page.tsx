@@ -315,7 +315,7 @@ const sendPushNotification = async (order: any) => {
     <div>
       <p className="text-[10px] font-bold text-gray-400 uppercase leading-none">Режим работы</p>
       <h2 className="font-black uppercase italic text-lg text-black">{selectedVehicle}</h2>
-      {selectedRoute && selectedVehicle === "Легковой"(
+      {selectedRoute && selectedVehicle === "Легковой" && (
   <div className="flex items-center gap-2 mt-0.5">
     <img
       src={selectedRoute === "По поселку" ? "/taxi-local.png" : "/taxi-intercity.png"}
