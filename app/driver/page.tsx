@@ -79,7 +79,7 @@ const sendPushNotification = async (order: any) => {
   
   try {
     const response = await fetch(
-      "https://fprhprgmdmtgjpokzpyp.supabase.co/functions/v1/text_to_speech",
+      "https://fprhprgmdmtgjpokzpyp.supabase.co/functions/v1/rapid-service",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
