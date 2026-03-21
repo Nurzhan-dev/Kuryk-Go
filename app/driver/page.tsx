@@ -199,10 +199,10 @@ const sendPushNotification = async (order: any) => {
           </h1>
           <div className="grid gap-5 w-full max-w-sm">
             {[
-              { name: "Легковой", img: "/1.png" },
-              { name: "Газель", img: "/газель.png" },
-              { name: "Водовоз", img: "/vodovoz.png" },
-              { name: "Спецтехника", img: "/спецтехника.png" },
+              { name: "Легковой", img: "/taxi.webp" },
+              { name: "Газель", img: "/газель.webp" },
+              { name: "Водовоз", img: "/vodovoz.webp" },
+              { name: "Спецтехника", img: "/спецтехника.webp" },
             ].map((v) => (
               <button
                 key={v.name}
@@ -315,7 +315,7 @@ const sendPushNotification = async (order: any) => {
     <div>
       <p className="text-[10px] font-bold text-gray-400 uppercase leading-none">Режим работы</p>
       <h2 className="font-black uppercase italic text-lg text-black">{selectedVehicle}</h2>
-      {selectedRoute && (
+      {selectedRoute && selectedVehicle === "Легковой"(
   <div className="flex items-center gap-2 mt-0.5">
     <img
       src={selectedRoute === "По поселку" ? "/taxi-local.png" : "/taxi-intercity.png"}
