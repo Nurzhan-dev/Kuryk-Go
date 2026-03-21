@@ -72,16 +72,27 @@ const sendPushNotification = async (order: any) => {
     }
   }, [selectedVehicle, isSoundEnabled]);
 
-  const speakOrder = (order: any) => {
-    if (soundRef.current && order.car_type === vehicleRef.current && "speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-      const text = `Новый заказ. ${order.from_address}. Цена ${order.price} тенге.`;
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "ru-RU";
-      utterance.rate = 0.9;
-      window.speechSynthesis.speak(utterance);
-    }
-  };
+  const speakOrder = async (order: any) => {
+  if (!soundRef.current || order.car_type !== vehicleRef.current) return;
+  
+  const text = `Новый заказ. ${order.from_address}. Цена ${order.price} тенге.`;
+  
+  try {
+    const response = await fetch(
+      "https://fprhprgmdmtgjpokzpyp.supabase.co/functions/v1/text_to_speech",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      }
+    );
+    const blob = await response.blob();
+    const audio = new Audio(URL.createObjectURL(blob));
+    audio.play();
+  } catch (err) {
+    console.error("Ошибка озвучки:", err);
+  }
+};
 
   useEffect(() => {
     fetchOrders();
