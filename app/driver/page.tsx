@@ -58,8 +58,13 @@ const sendPushNotification = async (order: any) => {
   useEffect(() => {
   const savedVehicle = localStorage.getItem("driver_selected_vehicle");
   const savedRoute = localStorage.getItem("driver_selected_route");
+  const savedSound = localStorage.getItem("driver_sound_enabled");
   if (savedVehicle) setSelectedVehicle(savedVehicle);
   if (savedRoute) setSelectedRoute(savedRoute);
+  if (savedSound === "true") {
+    setIsSoundEnabled(true);
+    soundRef.current = true;
+  }  
  }, []);
 
   useEffect(() => {
@@ -69,7 +74,7 @@ const sendPushNotification = async (order: any) => {
       localStorage.setItem("driver_selected_vehicle", selectedVehicle);
     } else {
       localStorage.removeItem("driver_selected_vehicle");
-    }
+    } localStorage.setItem("driver_sound_enabled", isSoundEnabled ? "true" : "false");
   }, [selectedVehicle, isSoundEnabled]);
 
 const speakOrder = (order: any) => {
@@ -194,9 +199,6 @@ const speakOrder = (order: any) => {
                 key={v.name}
                 onClick={() => {
                   setSelectedVehicle(v.name);
-                  if (!soundRef.current) {
-                  setShowSoundPrompt(true);
-                }
               }}
                 className="bg-gray-50 p-5 rounded-[32px] shadow-sm border-2 border-gray-100 active:scale-95 active:bg-yellow-400 transition-all flex items-center gap-6 group"
               >
