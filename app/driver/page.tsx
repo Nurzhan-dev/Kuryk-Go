@@ -72,26 +72,10 @@ const sendPushNotification = async (order: any) => {
     }
   }, [selectedVehicle, isSoundEnabled]);
 
-  const speakOrder = async (order: any) => {
+const speakOrder = (order: any) => {
   if (!soundRef.current || order.car_type !== vehicleRef.current) return;
-  
-  const text = `Новый заказ. ${order.from_address}. Цена ${order.price} тенге.`;
-  
-  try {
-    const response = await fetch(
-      "https://fprhprgmdmtgjpokzpyp.supabase.co/functions/v1/rapid-service",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      }
-    );
-    const blob = await response.blob();
-    const audio = new Audio(URL.createObjectURL(blob));
-    audio.play();
-  } catch (err) {
-    console.error("Ошибка озвучки:", err);
-  }
+  const audio = new Audio("/new-order.mp3");
+  audio.play().catch((err) => console.error("Ошибка звука:", err));
 };
 
   useEffect(() => {
@@ -125,9 +109,11 @@ const sendPushNotification = async (order: any) => {
     .order("created_at", { ascending: false });
   if (!error) {
     setOrders(data);
-    if (!soundRef.current && vehicleRef.current) {
-      setShowSoundPrompt(true);
-    }
+    const soundAsked = localStorage.getItem("sound_asked");
+  if (!soundRef.current && vehicleRef.current && !soundAsked) {
+  setShowSoundPrompt(true);
+  localStorage.setItem("sound_asked", "true");
+   }
   }
   setLoading(false);
 };
@@ -289,18 +275,22 @@ const sendPushNotification = async (order: any) => {
       <div className="flex gap-2">
         <button
           onClick={() => {
-            const unlock = new SpeechSynthesisUtterance("");
-            window.speechSynthesis.speak(unlock);
-            setIsSoundEnabled(true);
-            soundRef.current = true;
-            setShowSoundPrompt(false);
-          }}
+          const unlock = new SpeechSynthesisUtterance("");
+          window.speechSynthesis.speak(unlock);
+          setIsSoundEnabled(true);
+          soundRef.current = true;
+          setShowSoundPrompt(false);
+          localStorage.setItem("sound_asked", "true"); // уже есть выше
+        }}
           className="bg-yellow-400 text-black px-3 py-2 rounded-xl font-black text-xs uppercase"
         >
           🔊 Да
         </button>
         <button
-          onClick={() => setShowSoundPrompt(false)}
+          onClick={() => {
+          setShowSoundPrompt(false);
+          localStorage.setItem("sound_asked", "true");
+          }}
           className="bg-gray-700 text-white px-3 py-2 rounded-xl font-black text-xs uppercase"
         >
           Нет
