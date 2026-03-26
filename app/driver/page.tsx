@@ -35,6 +35,10 @@ const subscribeToPush = async () => {
 
 const sendPushNotification = async (order: any) => {
   if (order.car_type !== vehicleRef.current) return;
+  if (order.car_type === "Легковой" || order.car_type === "Газель") {
+    const savedRoute = localStorage.getItem("driver_selected_route");
+    if (savedRoute && order.route_type !== savedRoute) return;
+  }
   try {
     const subscription = await subscribeToPush();
     if (!subscription) return;
