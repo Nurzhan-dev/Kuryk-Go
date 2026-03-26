@@ -79,7 +79,7 @@ function CheckoutForm() {
         : toAddress,
       price: finalPrice,
       car_type: carType,
-      route_type: isTaxi ? taxiRoute?.label ?? null : null,
+      route_type: isTaxi ? taxiRoute?.label ?? null : isGazelle ? gazelleRoute?.label ?? null : null,
       payment_method: paymentMethod,
       status: "pending",
       passenger_phone: "+" + phone,
