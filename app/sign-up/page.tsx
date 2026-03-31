@@ -63,14 +63,87 @@ export default function SignUpPage() {
       <div className="max-w-md w-full bg-white p-8 rounded-[2.5rem] shadow-2xl border border-gray-100">
         
         {/* Переключатель ролей */}
+         Script
+"use client";
+import { useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+
+type Role = 'client' | 'driver';
+
+export default function SignUpPage() {
+  const [role, setRole] = useState<Role>('client'); 
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    // Очищаем номер от всего кроме цифр
+    const cleanPhone = phone.replace(/\D/g, "");
+    if (cleanPhone.length < 10) {
+      setError("Введите полный номер телефона");
+      setLoading(false);
+      return;
+    }
+
+    const fakeEmail = `${cleanPhone}@kuryk.go`;
+
+    try {
+      console.log("Отправка данных:", { email: fakeEmail, name, role });
+
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: fakeEmail,
+        password: password,
+        options: { 
+          data: { 
+            full_name: name, 
+            role: role // ТУТ ДОЛЖНО БЫТЬ 'client' или 'driver'
+          } 
+        }
+      });
+
+      if (signUpError) throw signUpError;
+
+      localStorage.setItem("savedPhoneNumber", cleanPhone);
+      
+      // Редирект
+      if (role === 'driver') {
+        router.push("/driver");
+      } else {
+        router.push("/");
+      }
+
+    } catch (err: any) {
+      console.error("Ошибка:", err);
+      setError(err.message || "Ошибка регистрации");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
+      <div className="max-w-md w-full bg-white p-8 rounded-[2.5rem] shadow-2xl border border-gray-100">
+        
+        {/* ВАЖНО: type="button" чтобы клик не отправлял форму раньше времени */}
         <div className="flex bg-gray-100 p-1 rounded-2xl mb-8">
           <button
+            type="button"
             onClick={() => setRole('client')}
             className={`flex-1 py-3 rounded-xl font-bold transition-all ${role === 'client' ? 'bg-white text-black shadow-sm' : 'text-gray-500'}`}
           >
             Я пассажир
           </button>
           <button
+            type="button"
             onClick={() => setRole('driver')}
             className={`flex-1 py-3 rounded-xl font-bold transition-all ${role === 'driver' ? 'bg-yellow-500 text-white shadow-sm' : 'text-gray-500'}`}
           >
@@ -80,7 +153,7 @@ export default function SignUpPage() {
 
         <h1 className="text-2xl font-black italic uppercase text-center mb-6 text-black">
           Регистрация <span className={role === 'driver' ? "text-yellow-500" : "text-blue-500"}>
-            {role === 'driver' ? "водителя" : "клиента"}
+            {role === 'driver' ? "водителя" : "пассажира"}
           </span>
         </h1>
         
@@ -139,4 +212,4 @@ export default function SignUpPage() {
       </div>
     </div>
   );
-                           }
+}
