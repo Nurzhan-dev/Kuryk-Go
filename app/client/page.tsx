@@ -102,15 +102,15 @@ export default function ClientDashboard() {
 
                 {/* Навигатор для клиента если водитель едет */}
                 {order.status === "accepted" && order.driver_location && (
-                  
+                  <a
                     href={`https://yandex.ru/maps/?rtext=~${order.driver_location.lat},${order.driver_location.lng}`}
                     target="_blank"
+                    rel="noopener noreferrer"
                     className="w-full bg-blue-500 text-white py-3 rounded-2xl font-black uppercase text-sm text-center block mb-2"
                   >
                     🗺️ Где водитель?
                   </a>
                 )}
-
                 {/* Отмена заказа */}
                 {order.status === "pending" && (
                   <button
