@@ -78,10 +78,10 @@ export default function SignInPage() {
       <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
         <div className="text-center mb-8 px-4">
   <h2 className="text-3xl font-black uppercase tracking-tighter text-gray-900 italic">
-    Начинаем <span className="text-yellow-500">работу ?</span>
+    Авторизация
   </h2>
   <p className="text-[10px] uppercase font-bold text-gray-400 tracking-widest mt-1">
-    Введите данные для доступа к заказам
+    Введите данные для доступа к кабинету
   </p>
   </div>
         <form onSubmit={handleSignIn} className="space-y-4">
@@ -125,7 +125,7 @@ export default function SignInPage() {
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-600">
-          Нет аккаунта? <Link href="/sign-up" className="text-yellow-600 font-black">СТАТЬ ВОДИТЕЛЕМ</Link>
+          Нет аккаунта? <Link href="/sign-up" className="text-yellow-600 font-black">Зарегистрироваться</Link>
         </p>
       </div>
     </div>
