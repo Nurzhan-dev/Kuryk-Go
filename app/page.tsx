@@ -33,8 +33,12 @@ export default function Home() {
 
   useEffect(() => {
   if (user) {
-    router.push('/driver');
-  }
+    const role = user.user_metadata?.role;
+    if (role === 'driver') {
+      router.push('/driver');
+    }
+    // клиент остаётся на главной
+   }
   }, [user]);
   return (
     <div className="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
