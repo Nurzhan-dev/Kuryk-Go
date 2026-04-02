@@ -27,6 +27,7 @@ function NavBar() {
     router.push("/");
        }
       }
+     }
     );
 
     return () => {
