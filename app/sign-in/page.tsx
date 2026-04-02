@@ -12,28 +12,19 @@ export default function SignInPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Проверяем текущую сессию - если пользователь уже вошел, перенаправляем на нужную страницу
     const checkSession = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        if (user?.user_metadata?.role === 'driver') {
-          router.push("/driver");
-        } else {
-          router.push("/");
-        }
+        const role = user?.user_metadata?.role;
+        router.push(role === 'driver' ? "/driver" : "/");
       }
     };
 
-    // Загружаем сохраненные данные из localStorage
     const savedPhone = localStorage.getItem("savedPhoneNumber");
     const savedPassword = localStorage.getItem("savedPassword");
     
-    if (savedPhone) {
-      setPhone(savedPhone);
-    }
-    if (savedPassword) {
-      setPassword(savedPassword);
-    }
+    if (savedPhone) setPhone(savedPhone);
+    if (savedPassword) setPassword(savedPassword);
 
     checkSession();
   }, [router]);
@@ -43,33 +34,38 @@ export default function SignInPage() {
     setLoading(true);
     setError(null);
 
-    const fakeEmail = `${phone.replace(/\D/g, "")}@kuryk.go`;
+    // Очищаем номер от всего кроме цифр
+    const cleanPhone = phone.replace(/\D/g, "");
+    const fakeEmail = `${cleanPhone}@kuryk.go`;
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ 
+      // ИСПРАВЛЕНО: Добавили { data } в деструктуризацию
+      const { data, error } = await supabase.auth.signInWithPassword({ 
         email: fakeEmail,
         password 
       });
       
       if (error) {
         setError("Неверный номер или пароль");
-      } else {
-        // Сохраняем номер телефона и пароль для следующего раза
+      } else if (data?.user) {
         localStorage.setItem("savedPhoneNumber", phone);
         localStorage.setItem("savedPassword", password);
+        
+        // Важно для Middleware: обновляем состояние сервера
         router.refresh();
-        // Проверяем роль пользователя и перенаправляем на нужную страницу
-          setTimeout(() => {
+
+        // Небольшая задержка, чтобы Middleware успел прочитать новые куки
+        setTimeout(() => {
           const role = data.user?.user_metadata?.role;
           if (role === 'driver') {
             router.push("/driver");
           } else {
             router.push("/");
           }
-        }, 100);
+        }, 150);
       }
     } catch (err) {
-      setError("Проблема с подключением. Подождите немного.");
+      setError("Проблема с подключением.");
     } finally {
       setLoading(false);
     }
@@ -79,39 +75,49 @@ export default function SignInPage() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
       <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
         <div className="text-center mb-8 px-4">
-  <h2 className="text-3xl font-black uppercase tracking-tighter text-gray-900 italic">
-    Авторизация
-  </h2>
-  <p className="text-[10px] uppercase font-bold text-gray-400 tracking-widest mt-1">
-    Введите данные для доступа к кабинету
-  </p>
-  </div>
+          <h2 className="text-3xl font-black uppercase tracking-tighter text-gray-900 italic">
+            Авторизация
+          </h2>
+          <p className="text-[10px] uppercase font-bold text-gray-400 tracking-widest mt-1">
+            Введите данные для доступа к кабинету
+          </p>
+        </div>
+
         <form onSubmit={handleSignIn} className="space-y-4">
-          {error && <p className="text-red-500 text-sm bg-red-50 p-2 rounded font-bold text-center">{error}</p>}
+          {error && (
+            <p className="text-red-500 text-xs bg-red-50 p-3 rounded-xl font-bold text-center border border-red-100">
+              {error}
+            </p>
+          )}
           
-          <input
-            type="tel"
-            inputMode="tel"
-            placeholder="+7 707 000 0000"
-            className="w-full p-4 bg-white text-black border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none font-bold placeholder-gray-400"
-            value={"+7" + phone}
-            onChange={(e) => {
-              let value = e.target.value.replace(/\D/g, '');
-              if (value.startsWith('7')) {
-                value = value.slice(1);
-              }
-              setPhone(value.slice(0, 10));
-            }}
-            maxLength={12}
-            disabled={loading}
-            required
-          />
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-gray-900 text-sm">
+              +7
+            </span>
+            <input
+              type="tel"
+              inputMode="tel"
+              placeholder="707 000 0000"
+              className="w-full p-4 pl-10 bg-white text-black border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 outline-none font-bold placeholder-gray-300 transition-all"
+              value={phone}
+              onChange={(e) => {
+                let value = e.target.value.replace(/\D/g, '');
+                // Если случайно вставили с 7 или 8 в начале
+                if (value.startsWith('7') || value.startsWith('8')) {
+                  value = value.slice(1);
+                }
+                setPhone(value.slice(0, 10));
+              }}
+              disabled={loading}
+              required
+            />
+          </div>
           
           <input
             type="password"
             placeholder="Пароль"
             value={password}
-            className="w-full p-4 bg-white text-black border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none font-bold placeholder-gray-400"
+            className="w-full p-4 bg-white text-black border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 outline-none font-bold placeholder-gray-300 transition-all"
             onChange={(e) => setPassword(e.target.value)}
             disabled={loading}
             required
@@ -119,15 +125,21 @@ export default function SignInPage() {
           
           <button 
             disabled={loading}
-            className="w-full bg-yellow-500 text-white p-4 rounded-xl font-black uppercase tracking-widest hover:bg-yellow-600 disabled:bg-gray-400 transition-all active:scale-95 flex items-center justify-center gap-2"
+            className="w-full bg-yellow-500 text-white p-4 rounded-xl font-black uppercase tracking-widest hover:bg-yellow-600 disabled:bg-gray-300 transition-all active:scale-95 flex items-center justify-center gap-2 shadow-md shadow-yellow-500/20"
           >
-            {loading && <div className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
-            {loading ? "Загрузка..." : "Войти"}
+            {loading ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              "Войти"
+            )}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Нет аккаунта? <Link href="/sign-up" className="text-yellow-600 font-black">Зарегистрироваться</Link>
+        <p className="mt-6 text-center text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+          Нет аккаунта?{" "}
+          <Link href="/sign-up" className="text-yellow-600 hover:text-yellow-700 underline underline-offset-2">
+            Зарегистрироваться
+          </Link>
         </p>
       </div>
     </div>
