@@ -17,81 +17,67 @@ export async function middleware(request: NextRequest) {
           return request.cookies.get(name)?.value
         },
         set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value,
-            ...options,
-          })
+          request.cookies.set({ name, value, ...options })
           response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
+            request: { headers: request.headers },
           })
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          })
+          response.cookies.set({ name, value, ...options })
         },
         remove(name: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
+          request.cookies.set({ name, value: '', ...options })
           response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
+            request: { headers: request.headers },
           })
-          response.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
+          response.cookies.set({ name, value: '', ...options })
         },
       },
     }
   )
-// Получаем сессию
+
+  // Важно: используем getUser() для безопасности, но если тормозит - getSession()
   const { data: { session } } = await supabase.auth.getSession()
 
   const url = request.nextUrl.clone()
-  const isDriverPage = url.pathname.startsWith('/driver')
   const isAuthPage = url.pathname.startsWith('/sign-in') || url.pathname.startsWith('/sign-up')
-  const isHomePage = url.pathname === '/'
-
-  // 1. ЕСЛИ НЕТ СЕССИИ:
-  // Если юзер не авторизован и НЕ на странице входа — кидаем на /sign-in
+  
+  // 1. Если сессии НЕТ и юзер НЕ на странице входа -> редирект на вход
   if (!session && !isAuthPage) {
     return NextResponse.redirect(new URL('/sign-in', request.url))
   }
 
-  // 2. ЕСЛИ СЕССИЯ ЕСТЬ:
+  // 2. Если сессия ЕСТЬ:
   if (session) {
     const role = session.user.user_metadata?.role
 
-    // Если авторизован и пытается зайти на /sign-in или /sign-up
+    // Если залогинен и пытается зайти на sign-in/up -> уводим по ролям
     if (isAuthPage) {
-      return NextResponse.redirect(new URL(role === 'driver' ? '/driver' : '/', request.url))
+      const redirectUrl = role === 'driver' ? '/driver' : '/'
+      return NextResponse.redirect(new URL(redirectUrl, request.url))
     }
 
-    // РАЗГРАНИЧЕНИЕ РОЛЕЙ:
-    // Если водитель ломится на главную (пассажирскую) — кидаем в кабинет
-    if (role === 'driver' && isHomePage) {
+    // Если водитель зашел на главную пассажирскую -> уводим в кабинет водителя
+    if (role === 'driver' && url.pathname === '/') {
       return NextResponse.redirect(new URL('/driver', request.url))
     }
-
-    // Если НЕ водитель (пассажир) пытается зайти в /driver — кидаем на главную
-    if (role !== 'driver' && isDriverPage) {
+    
+    // Если пассажир (или нет роли) зашел в /driver -> возвращаем на главную
+    if (role !== 'driver' && url.pathname.startsWith('/driver')) {
       return NextResponse.redirect(new URL('/', request.url))
     }
   }
 
   return response
 }
+
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    /*
+     * Проверяем всё, кроме:
+     * - api (маршруты базы)
+     * - _next/static (статика)
+     * - _next/image (оптимизация картинок)
+     * - favicon.ico и картинки из public
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
