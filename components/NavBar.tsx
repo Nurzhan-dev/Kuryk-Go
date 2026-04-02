@@ -86,6 +86,7 @@ function NavBar() {
        >
           Кабинет
          </button>
+       )}
        {user && user.user_metadata?.role === 'client' && (
        <button
           onClick={() => router.push("/client")}
