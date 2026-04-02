@@ -86,7 +86,14 @@ function NavBar() {
        >
           Кабинет
          </button>
-        )}
+       {user && user.user_metadata?.role === 'client' && (
+       <button
+          onClick={() => router.push("/client")}
+          className="text-white bg-black hover:bg-gray-800 px-4 md:px-5 py-2 md:py-2.5 rounded-lg transition-all font-bold text-xs md:text-sm shadow-md active:scale-95 h-7 md:h-8 flex items-center"
+       >
+       Мои заказы
+       </button>
+       )}
        </div>
 
         {/* ПРАВАЯ ЧАСТЬ: ВХОД/ВЫХОД */}
