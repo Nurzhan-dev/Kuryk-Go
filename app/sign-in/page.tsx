@@ -57,14 +57,16 @@ export default function SignInPage() {
         // Сохраняем номер телефона и пароль для следующего раза
         localStorage.setItem("savedPhoneNumber", phone);
         localStorage.setItem("savedPassword", password);
-        
+        router.refresh();
         // Проверяем роль пользователя и перенаправляем на нужную страницу
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user?.user_metadata?.role === 'driver') {
-          router.push("/driver");
-        } else {
-          router.push("/");
-        }
+          setTimeout(() => {
+          const role = data.user?.user_metadata?.role;
+          if (role === 'driver') {
+            router.push("/driver");
+          } else {
+            router.push("/");
+          }
+        }, 100);
       }
     } catch (err) {
       setError("Проблема с подключением. Подождите немного.");
