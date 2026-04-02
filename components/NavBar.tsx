@@ -20,8 +20,12 @@ function NavBar() {
       (event: AuthChangeEvent, session: Session | null) => {
         setUser(session?.user || null);
         if (event === 'SIGNED_IN') {
-          router.push("/driver");
-        }
+    const role = session?.user?.user_metadata?.role;
+    if (role === 'driver') {
+    router.push("/driver");
+    } else {
+    router.push("/");
+       }
       }
     );
 
@@ -73,13 +77,13 @@ function NavBar() {
       <img src="/logo.jpg" alt="Logo" className="h-10 md:h-11 w-28 md:w-36 object-cover" />
       </div>
       </div>
-       {user && (
+       {user && user.user_metadata?.role === 'driver' && (
        <button 
            disabled={isNavigating}
            className="text-white bg-black hover:bg-gray-800 px-4 md:px-5 py-2 md:py-2.5 rounded-lg transition-all font-bold text-xs md:text-sm shadow-md active:scale-95 h-7 md:h-8 flex items-center" 
            onClick={goToDriver}
       >
-           {isNavigating ? "..." : "Кабинет"}
+           {isNavigating ? : "Кабинет"}
        </button>
         )}
        </div>
