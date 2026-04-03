@@ -68,8 +68,10 @@ function CheckoutForm() {
     if (!phone || phone.length < 10) { alert("Введите корректный номер телефона!"); return; }
 
     setLoading(true);
-
+    try {
+    const { data: { user } } = await supabase.auth.getUser();
     const orderData = {
+      passenger_id: user?.id || null,
       from_address: isWater ? "Водовоз" : fromAddress,
       to_address: isSpecial
         ? `${toAddress} (${equipmentType})`
@@ -85,7 +87,10 @@ function CheckoutForm() {
       status: "pending",
       passenger_phone: "+" + phone,
     };
+    const { error } = await supabase.from("orders").insert([orderData]);
+      if (error) throw error;
 
+      localStorage.setItem("userPhone", "+" + phone);
     try {
       const { error } = await supabase.from("orders").insert([orderData]);
       if (error) throw error;
