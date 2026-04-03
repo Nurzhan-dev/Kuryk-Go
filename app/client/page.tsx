@@ -1,26 +1,58 @@
 "use client";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import ProtectedRoute from "@/components/ProtectedRoute"; // Не забываем защиту
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function ClientDashboard() {
   const [phone, setPhone] = useState("");
   const [order, setOrder] = useState<any>(null);
-  const [loading, setLoading] = useState(true); // Изначально true для авто-проверки
+  const [loading, setLoading] = useState(true);
   const [searched, setSearched] = useState(false);
+  const playSuccessSound = () => {
+    const audio = new Audio("/success.mp3");
+    audio.play().catch(() => console.log("Звук заблокирован браузером до клика"));
+  };
+  const VAPID_PUBLIC_KEY = "BIVIlqUOLuf5OtutgoSh2erD0WDkkLVVBYuF0Zwm5_AvMA_XrdGtR3cBgao6zm6RyYIXpZ49FXM40I-3hGJ0uCk";
+  const subscribeToPush = async () => {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+  
+  try {
+    const reg = await navigator.serviceWorker.register("/sw.js");
+    await navigator.serviceWorker.ready;
+    
+    let subscription = await reg.pushManager.getSubscription();
+    if (!subscription) {
+      subscription = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: VAPID_PUBLIC_KEY,            
+      });    
+    }
 
+    // Сохраняем подписку в профиль клиента
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase
+        .from("profiles")
+        .update({ push_subscription: subscription })
+        .eq("id", user.id);
+      
+      console.log("Подписка клиента сохранена в базу");
+    }
+  } catch (err) {
+    console.error("Ошибка Push:", err);
+  }
+};
   // 1. Автоматический поиск заказа при загрузке
   useEffect(() => {
     const autoFetch = async () => {
+      await subscribeToPush();
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // ПРИОРИТЕТ 1: Ищем по passenger_id (UUID), так как он 100% уникален
         await findOrder(null, user.id);
       } else {
-        // Если юзер не авторизован (гость), пробуем найти по телефону из localStorage
         const savedPhone = localStorage.getItem("userPhone");
         if (savedPhone) {
-          setPhone(savedPhone.replace("+", "")); // для отображения в инпуте
+          setPhone(savedPhone.replace("+", ""));
           await findOrder(savedPhone, null);
         } else {
           setLoading(false);
@@ -40,13 +72,16 @@ export default function ClientDashboard() {
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "orders", filter: `id=eq.${order.id}` },
         (payload) => {
-          setOrder(payload.new); // Обновляем данные заказа при любом изменении в БД
+          if (payload.new.status === "accepted" && order.status === "pending") {
+            playSuccessSound();
+            if (window.navigator.vibrate) window.navigator.vibrate([200, 100, 200]);
+          } 
+          setOrder(payload.new);
         }
       )
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
-  }, [order?.id]);
+  },[order?.id, order?.status]);
 
   const findOrder = async (phoneToSearch: string | null, userId: string | null) => {
     setLoading(true);
