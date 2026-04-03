@@ -140,18 +140,44 @@ const speakOrder = (order: any) => {
   };
 
   const acceptOrder = async (orderId: string, phone: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const { error } = await supabase
-      .from("orders")
-      .update({ status: "accepted", driver_id: user.id })
-      .eq("id", orderId);
-    if (!error) {
-      setOrders((prev) => prev.filter((order) => order.id !== orderId));
-      fetchHistory();
-      window.location.href = `tel:${phone}`;
+  const { data: { user: driver } } = await supabase.auth.getUser();
+  if (!driver) return;
+  const orderToAccept = orders.find(o => o.id === orderId);
+  const passengerId = orderToAccept?.passenger_id;
+  const { error } = await supabase
+    .from("orders")
+    .update({ 
+      status: "accepted", 
+      driver_id: driver.id 
+    })
+    .eq("id", orderId);
+
+  if (!error) {
+    if (passengerId) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("push_subscription")
+        .eq("id", passengerId)
+        .single();
+
+      if (profile?.push_subscription) {
+        fetch("https://fprhprgmdmtgjpokzpyp.supabase.co/functions/v1/push-notification", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            subscription: profile.push_subscription,
+            title: "Kuryk Go: Водитель найден!",
+            body: "🚗 Ваш заказ принят. Водитель в пути!",
+            url: "/client"
+          }),
+        }).catch(err => console.error("Ошибка отправки пуша:", err));
+      }
     }
-  };
+    setOrders((prev) => prev.filter((order) => order.id !== orderId));
+    fetchHistory();
+    window.location.href = `tel:${phone}`;
+  }
+};
 
   const completeOrder = async (orderId: string) => {
     const { error } = await supabase
