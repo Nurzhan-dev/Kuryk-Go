@@ -87,11 +87,7 @@ function CheckoutForm() {
       status: "pending",
       passenger_phone: "+" + phone,
     };
-    const { error } = await supabase.from("orders").insert([orderData]);
-      if (error) throw error;
-
       localStorage.setItem("userPhone", "+" + phone);
-    try {
       const { error } = await supabase.from("orders").insert([orderData]);
       if (error) throw error;
       alert("Заказ принят! Ждите звонка водителя.");
