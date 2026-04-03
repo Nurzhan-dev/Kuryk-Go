@@ -13,20 +13,20 @@ export default function ClientDashboard() {
   useEffect(() => {
     const autoFetch = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      
-      // Если у юзера в профиле есть телефон, используем его
-      const userPhone = user?.phone || user?.user_metadata?.phone;
-      
-      if (userPhone) {
-        // Очищаем номер от лишних знаков для поиска
-        const cleanPhone = userPhone.replace(/\D/g, "");
-        setPhone(cleanPhone);
-        await findOrder("+" + cleanPhone);
+      if (user) {
+        // ПРИОРИТЕТ 1: Ищем по passenger_id (UUID), так как он 100% уникален
+        await findOrder(null, user.id);
       } else {
-        setLoading(false);
+        // Если юзер не авторизован (гость), пробуем найти по телефону из localStorage
+        const savedPhone = localStorage.getItem("userPhone");
+        if (savedPhone) {
+          setPhone(savedPhone.replace("+", "")); // для отображения в инпуте
+          await findOrder(savedPhone, null);
+        } else {
+          setLoading(false);
+        }
       }
     };
-
     autoFetch();
   }, []);
 
@@ -48,22 +48,35 @@ export default function ClientDashboard() {
     return () => { supabase.removeChannel(channel); };
   }, [order?.id]);
 
-  const findOrder = async (phoneToSearch: string) => {
+  const findOrder = async (phoneToSearch: string | null, userId: string | null) => {
     setLoading(true);
     setSearched(true);
     
-    const { data, error } = await supabase
+    let query = supabase
       .from("orders")
       .select("*")
-      .eq("passenger_phone", phoneToSearch)
-      .in("status", ["pending", "accepted"])
+      .in("status", ["pending", "accepted"]);
+    
+    if (userId) {
+      query = query.eq("passenger_id", userId);
+    } 
+    // Иначе ищем по номеру телефона
+    else if (phoneToSearch) {
+      query = query.eq("passenger_phone", phoneToSearch);
+    } else {
+      setLoading(false);
+      return;
+    }
+    const { data, error } = await query
       .order("created_at", { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
-    if (!error && data) setOrder(data);
-    else setOrder(null);
-    
+    if (!error && data) {
+      setOrder(data);
+    } else {
+      setOrder(null);
+    }
     setLoading(false);
   };
 
