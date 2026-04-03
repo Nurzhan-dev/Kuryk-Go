@@ -122,7 +122,7 @@ export default function ClientDashboard() {
                 maxLength={12}
               />
               <button
-                onClick={() => findOrder("+" + phone)}
+                onClick={() => findOrder("+" + phone, null)}
                 disabled={loading}
                 className="w-full mt-3 py-3 bg-black text-white rounded-2xl font-black uppercase text-sm active:scale-95 transition-all"
               >
