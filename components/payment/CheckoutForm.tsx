@@ -2,6 +2,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { SelectedCarContext } from "@/context/SelectedCarContext";
+import { useRouter } from 'next/navigation';
 
 type PaymentMethod = "cash" | "kaspi" | "halyk";
 
@@ -32,7 +33,7 @@ function CheckoutForm() {
   const [taxiRoute, setTaxiRoute] = useState<typeof TAXI_ROUTES[0] | null>(null);
   const [gazelleRoute, setGazelleRoute] = useState<typeof GAZELLE_ROUTES[0] | null>(null);
   const [waterVolume, setWaterVolume] = useState<number | null>(null);
-
+  const router = useRouter();
   const carContext = useContext(SelectedCarContext);
   const selectedCar = carContext?.selectedCar ?? null;
   const setFinalPrice = carContext?.setFinalPrice;
@@ -96,6 +97,7 @@ function CheckoutForm() {
       setTaxiRoute(null);
       setGazelleRoute(null);
       setWaterVolume(null);
+      router.push('/client');
     } catch (error: any) {
       console.error("Ошибка при отправке заказа");
       alert("Ошибка при отправке: " + error.message);
