@@ -48,7 +48,7 @@ export default function SignInPage() {
       });
       
       if (authError) {
-        setError("Неверный номер или пароль");
+        setError("Неверный номер или пароль. Если вы новый пользователь — нажмите Создать аккаунт");
       } else if (data?.session) {
         // ПРИНУДИТЕЛЬНО ВШИВАЕМ СЕССИЮ В КУКИ (для Middleware)
         await supabase.auth.setSession(data.session);
@@ -145,7 +145,7 @@ export default function SignInPage() {
         <p className="mt-8 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">
           Нет аккаунта?{" "}
           <Link href="/sign-up" className="text-yellow-600 hover:text-yellow-700 underline underline-offset-4 decoration-2">
-            Регистрация
+            Создать аккаунт
           </Link>
         </p>
       </div>
