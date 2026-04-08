@@ -141,14 +141,32 @@ const sendPushNotification = async (order: any) => {
 };
 
   useEffect(() => {
+    // ВАЖНО: Если мы еще грузим данные, ничего не сохраняем и не удаляем!
+    if (loading) return;
+
+    // Обновляем рефы для звука и пушей
     vehicleRef.current = selectedVehicle;
     soundRef.current = isSoundEnabled;
+
+    // Сохраняем тип транспорта
     if (selectedVehicle) {
       localStorage.setItem("driver_selected_vehicle", selectedVehicle);
     } else {
       localStorage.removeItem("driver_selected_vehicle");
-    } localStorage.setItem("driver_sound_enabled", isSoundEnabled ? "true" : "false");
-  }, [selectedVehicle, isSoundEnabled]);
+    }
+
+    // Сохраняем маршрут (добавили это сюда)
+    if (selectedRoute) {
+      localStorage.setItem("driver_selected_route", selectedRoute);
+    } else {
+      localStorage.removeItem("driver_selected_route");
+    }
+
+    // Сохраняем настройки звука
+    localStorage.setItem("driver_sound_enabled", isSoundEnabled ? "true" : "false");
+
+  }, [selectedVehicle, selectedRoute, isSoundEnabled, loading]); // Добавили loading в зависимости
+  
 
 const speakOrder = (order: any) => {
   if (!soundRef.current || order.car_type !== vehicleRef.current) return;
