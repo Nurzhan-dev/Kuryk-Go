@@ -1,8 +1,11 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function DriverDashboard() {
+  const router = useRouter();
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -13,9 +16,38 @@ export default function DriverDashboard() {
   const [isSoundEnabled, setIsSoundEnabled] = useState(false);
   const vehicleRef = useRef<string | null>(null);
   const soundRef = useRef(false);
-
   const VAPID_PUBLIC_KEY = "BIVIlqUOLuf5OtutgoSh2erD0WDkkLVVBYuF0Zwm5_AvMA_XrdGtR3cBgao6zm6RyYIXpZ49FXM40I-3hGJ0uCk";
 
+  useEffect(() => {
+    const checkRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/"); // Если не залогинен — на главную
+        return;
+      }
+      // Получаем роль из профиля
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      if (profile?.role !== "driver") {
+        alert("Доступ только для водителей!");
+        router.push("/"); // Если клиент — выкидываем
+      } else {
+        setUserRole("driver");
+      }
+    };
+
+    checkRole();
+  }, []);
+
+  // Если роль еще проверяется, показываем загрузку
+  if (!userRole && loading) {
+    return <div className="min-h-screen flex items-center justify-center font-bold">Проверка доступа...</div>;
+  }
+  
 const subscribeToPush = async () => {
   if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
   try {
