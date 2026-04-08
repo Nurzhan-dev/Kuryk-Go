@@ -19,13 +19,20 @@ export default function DriverDashboard() {
   const VAPID_PUBLIC_KEY = "BIVIlqUOLuf5OtutgoSh2erD0WDkkLVVBYuF0Zwm5_AvMA_XrdGtR3cBgao6zm6RyYIXpZ49FXM40I-3hGJ0uCk";
 
   useEffect(() => {
-    const checkRole = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+  const initDashboard = async () => {
+    try {
+      setLoading(true);
+
+      // 1. Проверка пользователя
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData?.user;
+
       if (!user) {
-        router.push("/"); // Если не залогинен — на главную
+        router.push("/");
         return;
       }
-      // Получаем роль из профиля
+
+      // 2. Проверка роли в базе
       const { data: profile } = await supabase
         .from("profiles")
         .select("role")
@@ -33,20 +40,39 @@ export default function DriverDashboard() {
         .single();
 
       if (profile?.role !== "driver") {
-        alert("Доступ только для водителей!");
-        router.push("/"); // Если клиент — выкидываем
-      } else {
-        setUserRole("driver");
+        router.push("/");
+        return;
       }
-    };
 
-    checkRole();
-  }, []);
+      // 3. ВОССТАНОВЛЕНИЕ ФИЛЬТРОВ (Тут твоя логика не потеряется)
+      const savedVehicle = localStorage.getItem("driver_selected_vehicle");
+      const savedRoute = localStorage.getItem("driver_selected_route");
 
-  // Если роль еще проверяется, показываем загрузку
-  if (!userRole && loading) {
-    return <div className="min-h-screen flex items-center justify-center font-bold">Проверка доступа...</div>;
-  }
+      if (savedVehicle) {
+        setSelectedVehicle(savedVehicle);
+        vehicleRef.current = savedVehicle; // Важно для пушей и звука
+      }
+      if (savedRoute) {
+        setSelectedRoute(savedRoute);
+      }
+
+      // 4. Загрузка данных
+      setUserRole("driver");
+      await Promise.all([fetchOrders(), fetchHistory()]);
+
+    } catch (err) {
+      console.error("Ошибка:", err);
+      router.push("/");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  initDashboard();
+
+  return () => { supabase.removeChannel(channel); };
+}, [router]);
+    
   
 const subscribeToPush = async () => {
   if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
