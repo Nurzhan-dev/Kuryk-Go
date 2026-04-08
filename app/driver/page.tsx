@@ -49,10 +49,12 @@ const sendPushNotification = async (order: any) => {
         "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcmhwcmdtZG10Z2pwb2t6cHlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEwMzI0MzQsImV4cCI6MjA1NjYwODQzNH0.yRa3De8bMFMHHpNzBFvRHMEW3pBBaW3_ij4V2GBjPKY",
       },
       body: JSON.stringify({
-        subscription,
-        title: "У вас новый заказ!",
-        body: `${order.from_address} → ${order.price} ₸`,
-      }),
+      subscription,
+      title: "🚖 Новый заказ!",
+      body: `${order.from_address} → ${order.to_address} • ${order.price} ₸`,
+      url: "/driver",
+      tag: "new-order",
+     }),
     });
   } catch (err) {
     console.error("Ошибка отправки push:", err);
@@ -168,7 +170,8 @@ const speakOrder = (order: any) => {
             subscription: profile.push_subscription,
             title: "Kuryk Go: Водитель найден!",
             body: "🚗 Ваш заказ принят. Водитель в пути!",
-            url: "/client"
+            url: "/client",
+            tag: "order-accepted",
           }),
         }).catch(err => console.error("Ошибка отправки пуша:", err));
       }
