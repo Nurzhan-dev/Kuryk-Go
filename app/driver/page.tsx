@@ -19,20 +19,20 @@ export default function DriverDashboard() {
   const VAPID_PUBLIC_KEY = "BIVIlqUOLuf5OtutgoSh2erD0WDkkLVVBYuF0Zwm5_AvMA_XrdGtR3cBgao6zm6RyYIXpZ49FXM40I-3hGJ0uCk";
 
   useEffect(() => {
+  let channel: any;
+
   const initDashboard = async () => {
     try {
       setLoading(true);
 
-      // 1. Проверка пользователя
+      // 1. Проверка доступа (обязательно!)
       const { data: authData } = await supabase.auth.getUser();
       const user = authData?.user;
-
       if (!user) {
         router.push("/");
         return;
       }
 
-      // 2. Проверка роли в базе
       const { data: profile } = await supabase
         .from("profiles")
         .select("role")
@@ -44,25 +44,43 @@ export default function DriverDashboard() {
         return;
       }
 
-      // 3. ВОССТАНОВЛЕНИЕ ФИЛЬТРОВ (Тут твоя логика не потеряется)
+      // 2. Восстановление фильтров (из твоего 1-го блока)
       const savedVehicle = localStorage.getItem("driver_selected_vehicle");
       const savedRoute = localStorage.getItem("driver_selected_route");
+      const savedSound = localStorage.getItem("driver_sound_enabled");
 
       if (savedVehicle) {
         setSelectedVehicle(savedVehicle);
-        vehicleRef.current = savedVehicle; // Важно для пушей и звука
+        vehicleRef.current = savedVehicle;
       }
-      if (savedRoute) {
-        setSelectedRoute(savedRoute);
+      if (savedRoute) setSelectedRoute(savedRoute);
+      if (savedSound === "true") {
+        setIsSoundEnabled(true);
+        soundRef.current = true;
       }
 
-      // 4. Загрузка данных
+      // 3. Загрузка данных (из твоего 3-го блока)
       setUserRole("driver");
       await Promise.all([fetchOrders(), fetchHistory()]);
 
+      // 4. Подписка на Realtime
+      channel = supabase
+        .channel("realtime-orders")
+        .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, (payload) => {
+          if (payload.eventType === "INSERT") {
+            setOrders((prev) => [payload.new, ...prev]);
+            speakOrder(payload.new);
+            sendPushNotification(payload.new);
+          } else if (payload.eventType === "UPDATE") {
+            if (payload.new.status !== "pending") {
+              setOrders((prev) => prev.filter((o) => o.id !== payload.new.id));
+            }
+          }
+        })
+        .subscribe();
+
     } catch (err) {
-      console.error("Ошибка:", err);
-      router.push("/");
+      console.error("Ошибка инициализации:", err);
     } finally {
       setLoading(false);
     }
@@ -70,8 +88,11 @@ export default function DriverDashboard() {
 
   initDashboard();
 
-  return () => { supabase.removeChannel(channel); };
-}, [router]);
+  return () => {
+    if (channel) supabase.removeChannel(channel);
+  };
+}, [router]); // Запускается один раз при входе
+    
     
   
 const subscribeToPush = async () => {
@@ -120,18 +141,6 @@ const sendPushNotification = async (order: any) => {
 };
 
   useEffect(() => {
-  const savedVehicle = localStorage.getItem("driver_selected_vehicle");
-  const savedRoute = localStorage.getItem("driver_selected_route");
-  const savedSound = localStorage.getItem("driver_sound_enabled");
-  if (savedVehicle) setSelectedVehicle(savedVehicle);
-  if (savedRoute) setSelectedRoute(savedRoute);
-  if (savedSound === "true") {
-    setIsSoundEnabled(true);
-    soundRef.current = true;
-  }  
- }, []);
-
-  useEffect(() => {
     vehicleRef.current = selectedVehicle;
     soundRef.current = isSoundEnabled;
     if (selectedVehicle) {
@@ -146,28 +155,6 @@ const speakOrder = (order: any) => {
   const audio = new Audio("/new-order.mp3");
   audio.play().catch((err) => console.error("Ошибка звука:", err));
 };
-
-  useEffect(() => {
-    fetchOrders();
-    fetchHistory();
-
-    const channel = supabase
-      .channel("realtime-orders")
-      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, (payload) => {
-        if (payload.eventType === "INSERT") {
-          setOrders((prev) => [payload.new, ...prev]);
-          speakOrder(payload.new);
-          sendPushNotification(payload.new);
-        } else if (payload.eventType === "UPDATE") {
-          if (payload.new.status !== "pending") {
-            setOrders((prev) => prev.filter((order) => order.id !== payload.new.id));
-          }
-        }
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, []);
 
   const fetchOrders = async () => {
   setLoading(true);
