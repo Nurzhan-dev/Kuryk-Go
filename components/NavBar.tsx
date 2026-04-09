@@ -73,13 +73,13 @@ function NavBar() {
         
         {/* ЛЕВАЯ ЧАСТЬ: ЛОГОТИП */}
          <div 
-          className="flex items-center justify-center cursor-pointer active:scale-95 transition-transform bg-white w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg border border-white/20 overflow-hidden"
+          className="flex items-center justify-center cursor-pointer active:scale-95 transition-transform bg-white h-10 md:h-12 w-24 md:w-28 rounded-xl shadow-lg border border-white/20 overflow-hidden"
           onClick={() => router.push("/")}
         >
           <img 
             src="/logo.jpg" 
             alt="Logo" 
-            className="w-full h-full object-cover scale-150" 
+            className="w-full h-full object-cover scale-125" 
           />
         </div>
 
