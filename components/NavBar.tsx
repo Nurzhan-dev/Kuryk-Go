@@ -37,10 +37,6 @@ function NavBar() {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event: AuthChangeEvent, session: Session | null) => {
         setUser(session?.user || null);
-        if (event === 'SIGNED_IN') {
-          const role = session?.user?.user_metadata?.role;
-          router.push(role === 'driver' ? "/driver" : "/");
-        }
       }
     );
 
@@ -74,7 +70,15 @@ function NavBar() {
         {/* ЛЕВАЯ ЧАСТЬ: ЛОГОТИП */}
          <div 
           className="flex items-center justify-center cursor-pointer active:scale-95 transition-transform bg-white h-10 md:h-12 w-24 md:w-28 rounded-xl shadow-lg border border-white/20 overflow-hidden"
-          onClick={() => router.push("/")}
+          onClick={() => {
+          // Если пользователь — водитель, логотип ведет в его кабинет
+          if (user?.user_metadata?.role === 'driver') {
+          router.push("/driver");
+          } else {
+          // Для клиентов и гостей — на главную
+          router.push("/");
+         }
+        }}
         >
           <img 
             src="/logo.jpg" 
