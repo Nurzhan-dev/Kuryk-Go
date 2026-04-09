@@ -3,225 +3,301 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
+type TabType = "created" | "active" | "history";
+
 export default function ClientDashboard() {
-  const [phone, setPhone] = useState("");
-  const [order, setOrder] = useState<any>(null);
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<TabType>("created");
+  const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searched, setSearched] = useState(false);
+  const [phone, setPhone] = useState("");
+
+  const VAPID_PUBLIC_KEY = "BIVIlqUOLuf5OtutgoSh2erD0WDkkLVVBYuF0Zwm5_AvMA_XrdGtR3cBgao6zm6RyYIXpZ49FXM40I-3hGJ0uCk";
+
+  // Звук при принятии заказа
   const playSuccessSound = () => {
     const audio = new Audio("/success.mp3");
-    audio.play().catch(() => console.log("Звук заблокирован браузером до клика"));
+    audio.play().catch(() => console.log("Звук заблокирован"));
   };
-  const VAPID_PUBLIC_KEY = "BIVIlqUOLuf5OtutgoSh2erD0WDkkLVVBYuF0Zwm5_AvMA_XrdGtR3cBgao6zm6RyYIXpZ49FXM40I-3hGJ0uCk";
-  const subscribeToPush = async () => {
-  if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
-  
-  try {
-    const reg = await navigator.serviceWorker.register("/sw.js");
-    await navigator.serviceWorker.ready;
-    
-    let subscription = await reg.pushManager.getSubscription();
-    if (!subscription) {
-      subscription = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: VAPID_PUBLIC_KEY,            
-      });    
-    }
 
-    // Сохраняем подписку в профиль клиента
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      await supabase
-        .from("profiles")
-        .update({ push_subscription: subscription })
-        .eq("id", user.id);
-      
-      console.log("Подписка клиента сохранена в базу");
-    }
-  } catch (err) {
-    console.error("Ошибка Push:", err);
-  }
-};
-  // 1. Автоматический поиск заказа при загрузке
   useEffect(() => {
-    const autoFetch = async () => {
-      await subscribeToPush();
+  let channel: any;
+
+  const initDashboard = async () => {
+    try {
+      setLoading(true);
+
+      // 1. Проверка сессии
       const { data: { user } } = await supabase.auth.getUser();
+      
+      let currentPhone = "";
+      let currentUserId = null;
+
       if (user) {
-        await findOrder(null, user.id);
+        // 2. Проверка роли (защита от входа водителя)
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .single();
+
+        if (profile?.role !== "client") {
+          router.push("/sign-up");
+          return;
+        }
+        currentUserId = user.id;
+        await subscribeToPush(user.id);
       } else {
+        // 3. Если нет юзера, проверяем телефон (для неавторизованных)
         const savedPhone = localStorage.getItem("userPhone");
-        if (savedPhone) {
-          setPhone(savedPhone.replace("+", ""));
-          await findOrder(savedPhone, null);
-        } else {
-          setLoading(false);
+        if (!savedPhone) {
+          router.push("/sign-up");
+          return;
         }
+        currentPhone = savedPhone;
+        setPhone(savedPhone.replace("+", ""));
       }
-    };
-    autoFetch();
-  }, []);
 
-  // 2. Real-time подписка на изменения заказа
-  useEffect(() => {
-    if (!order?.id) return;
+      // 4. Загружаем данные
+      await fetchAllOrders(currentUserId, currentPhone);
 
-    const channel = supabase
-      .channel(`order-${order.id}`)
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "orders", filter: `id=eq.${order.id}` },
-        (payload) => {
-          if (payload.new.status === "accepted" && order.status === "pending") {
-            playSuccessSound();
-            if (window.navigator.vibrate) window.navigator.vibrate([200, 100, 200]);
-          } 
-          setOrder(payload.new);
-        }
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  },[order?.id, order?.status]);
+      // 5. Включаем Real-time только когда всё проверено и загружено
+      channel = supabase
+        .channel("client-orders-updates")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "orders" },
+          (payload) => {
+            if (payload.eventType === "INSERT") {
+              setOrders((prev) => [payload.new, ...prev]);
+            } else if (payload.eventType === "UPDATE") {
+              if (payload.new.status === "accepted") {
+                playSuccessSound();
+                if (window.navigator.vibrate) window.navigator.vibrate([200, 100, 200]);
+              }
+              setOrders((prev) => prev.map(o => o.id === payload.new.id ? payload.new : o));
+            }
+          }
+        )
+        .subscribe();
 
-  const findOrder = async (phoneToSearch: string | null, userId: string | null) => {
-    setLoading(true);
-    setSearched(true);
-    
-    let query = supabase
-      .from("orders")
-      .select("*")
-      .in("status", ["pending", "accepted"]);
-    
-    if (userId) {
-      query = query.eq("passenger_id", userId);
-    } 
-    // Иначе ищем по номеру телефона
-    else if (phoneToSearch) {
-      query = query.eq("passenger_phone", phoneToSearch);
-    } else {
+    } catch (err) {
+      console.error("Ошибка инициализации:", err);
+      router.push("/");
+    } finally {
       setLoading(false);
-      return;
     }
-    const { data, error } = await query
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+  };
 
-    if (!error && data) {
-      setOrder(data);
-    } else {
-      setOrder(null);
+  initDashboard();
+
+  // Чистим канал при уходе со страницы
+  return () => {
+    if (channel) supabase.removeChannel(channel);
+  };
+ }, [router]);
+
+  const fetchAllOrders = async (userId: string | null, phoneStr: string | null = null) => {
+    let query = supabase.from("orders").select("*");
+    if (userId) query = query.eq("passenger_id", userId);
+    else if (phoneStr) query = query.eq("passenger_phone", phoneStr);
+    
+    const { data } = await query.order("created_at", { ascending: false });
+    if (data) setOrders(data);
+  };
+
+  const subscribeToPush = async (userId: string) => {
+    if (!("serviceWorker" in navigator)) return;
+    try {
+      const reg = await navigator.serviceWorker.register("/sw.js");
+      let sub = await reg.pushManager.getSubscription();
+      if (!sub) {
+        sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: VAPID_PUBLIC_KEY,
+        });
+      }
+      await supabase.from("profiles").update({ push_subscription: sub }).eq("id", userId);
+    } catch (e) { console.error(e); }
+  };
+
+  // Фильтрация заказов по вкладкам
+  const pendingOrders = orders.filter(o => o.status === "pending");
+  const activeOrders = orders.filter(o => o.status === "accepted" || o.status === "in_progress");
+  const historyOrders = orders.filter(o => o.status === "completed" || o.status === "cancelled");
+
+  // Итого потрачено (только за завершенные)
+  const totalSpent = historyOrders
+    .filter(o => o.status === "completed")
+    .reduce((sum, o) => sum + (Number(o.price) || 0), 0);
+
+  const cancelOrder = async (id: string) => {
+    if (!window.confirm("Отменить этот заказ?")) return;
+    await supabase.from("orders").update({ status: "cancelled" }).eq("id", id);
+  };
+
+  const clearHistory = async () => {
+    if (historyOrders.length === 0) return;
+    
+    const confirmClear = window.confirm("Вы уверены, что хотите очистить историю поездок? Это удалит данные навсегда.");
+    if (!confirmClear) return;
+
+    try {
+      const idsToDelete = historyOrders.map(o => o.id);
+      
+      const { error } = await supabase
+        .from("orders")
+        .delete()
+        .in("id", idsToDelete);
+
+      if (error) throw error;
+
+      // Обновляем локальный стейт, оставляя только активные и новые заказы
+      setOrders(prev => prev.filter(o => !idsToDelete.includes(o.id)));
+      alert("История очищена");
+    } catch (err) {
+      console.error("Ошибка при удалении истории:", err);
+      alert("Не удалось очистить историю");
     }
-    setLoading(false);
   };
-
-  const cancelOrder = async () => {
-    if (!order) return;
-    const confirm = window.confirm("Отменить заказ?");
-    if (!confirm) return;
-    const { error } = await supabase
-      .from("orders")
-      .update({ status: "cancelled" })
-      .eq("id", order.id);
-    if (!error) setOrder(null);
-  };
-
-  const statusLabel = (status: string) => {
-    if (status === "pending") return { text: "⏳ Ожидание водителя", color: "text-yellow-500" };
-    if (status === "accepted") return { text: "🚗 Водитель едет к вам", color: "text-green-500" };
-    return { text: status, color: "text-gray-400" };
-  };
-
+  
   return (
     <ProtectedRoute requiredRole="client">
-      <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
-        <div className="w-full max-w-sm">
-          <h1 className="text-2xl font-black uppercase italic text-center mb-8 text-black">
-            Мой <span className="text-yellow-500">заказ</span>
+      <div className="min-h-screen bg-gray-50 pb-24">
+        {/* Шапка */}
+        <div className="bg-white p-4 border-b sticky top-0 z-10">
+          <h1 className="text-xl font-black uppercase italic text-center">
+            KURYK <span className="text-yellow-500">GO</span>
           </h1>
+        </div>
 
-          {/* Поле поиска оставляем как запасной вариант */}
-          {!order && !loading && (
-            <div className="bg-white p-4 rounded-3xl shadow-sm mb-4">
-              <label className="text-[10px] font-bold text-gray-400 uppercase">Ваш номер телефона</label>
-              <input
-                type="tel"
-                placeholder="+7 707 000 0000"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-black outline-none text-sm mt-1"
-                value={phone ? (phone.startsWith("+") ? phone : "+" + phone) : ""}
-                onChange={(e) => {
-                  let value = e.target.value.replace(/\D/g, "");
-                  if (value && !value.startsWith("7")) value = "7" + value;
-                  setPhone(value.slice(0, 11));
-                }}
-                maxLength={12}
-              />
-              <button
-                onClick={() => findOrder("+" + phone, null)}
-                disabled={loading}
-                className="w-full mt-3 py-3 bg-black text-white rounded-2xl font-black uppercase text-sm active:scale-95 transition-all"
-              >
-                Найти заказ вручную
-              </button>
-            </div>
-          )}
-
-          {/* Загрузка */}
-          {loading && (
-            <div className="text-center py-10 animate-pulse text-xs font-bold text-gray-400 uppercase tracking-widest">
-              Ищем ваш заказ...
-            </div>
-          )}
-
-          {/* Результат */}
-          {!loading && order && (
-            <div className="bg-white p-5 rounded-3xl shadow-sm border-l-4 border-yellow-400 animate-in fade-in zoom-in duration-300">
-              <p className={`font-black text-sm uppercase mb-3 ${statusLabel(order.status).color}`}>
-                {statusLabel(order.status).text}
-              </p>
-              
-              <div className="space-y-2 mb-4">
-                <p className="text-sm text-black">
-                  <span className="text-gray-400 font-bold text-[10px] uppercase block">Откуда:</span>
-                  <b>{order.from_address}</b>
-                </p>
-                <p className="text-sm text-black">
-                  <span className="text-gray-400 font-bold text-[10px] uppercase block">Куда:</span>
-                  <b>{order.to_address}</b>
-                </p>
-                <p className="text-sm text-black">
-                  <span className="text-gray-400 font-bold text-[10px] uppercase block">Цена:</span>
-                  <b className="text-green-600">{order.price} ₸</b>
-                </p>
-              </div>
-
-              {order.status === "accepted" && order.driver_location && (
-                <a
-                  href={`https://yandex.ru/maps/?rtext=~${order.driver_location.lat},${order.driver_location.lng}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full bg-blue-500 text-white py-3 rounded-2xl font-black uppercase text-sm text-center block mb-2"
-                >
-                  🗺️ Где водитель?
-                </a>
+        <main className="p-4 max-w-md mx-auto">
+          {loading ? (
+            <div className="text-center py-20 animate-pulse font-bold text-gray-400">ЗАГРУЗКА...</div>
+          ) : (
+            <>
+              {/* ВКЛАДКА: ОЖИДАЮТ (PENDING) */}
+              {activeTab === "created" && (
+                <div className="space-y-4">
+                  <h2 className="text-xs font-black uppercase text-gray-400 tracking-widest">Новые заказы</h2>
+                  {pendingOrders.length === 0 ? (
+                    <div className="text-center py-10 text-gray-400 italic text-sm">Нет активных заявок</div>
+                  ) : (
+                    pendingOrders.map(o => (
+                      <div key={o.id} className="bg-white p-4 rounded-3xl shadow-sm border-l-4 border-yellow-400">
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold">⏳ ПОИСК ВОДИТЕЛЯ</span>
+                          <b className="text-lg">{o.price} ₸</b>
+                        </div>
+                        <p className="text-sm"><b>Откуда:</b> {o.from_address}</p>
+                        <p className="text-sm"><b>Куда:</b> {o.to_address}</p>
+                        <button onClick={() => cancelOrder(o.id)} className="w-full mt-3 text-red-500 font-bold text-xs uppercase py-2 bg-red-50 rounded-xl">Отменить</button>
+                      </div>
+                    ))
+                  )}
+                </div>
               )}
 
-              {order.status === "pending" && (
-                <button
-                  onClick={cancelOrder}
-                  className="w-full bg-red-50 text-red-500 py-3 rounded-2xl font-black uppercase text-sm active:scale-95 transition-all"
-                >
-                  ❌ Отменить заказ
-                </button>
+              {/* ВКЛАДКА: В ПУТИ (ACCEPTED) */}
+              {activeTab === "active" && (
+                <div className="space-y-4">
+                  <h2 className="text-xs font-black uppercase text-gray-400 tracking-widest">Водитель едет</h2>
+                  {activeOrders.length === 0 ? (
+                    <div className="text-center py-10 text-gray-400 italic text-sm">Сейчас поездок нет</div>
+                  ) : (
+                    activeOrders.map(o => (
+                      <div key={o.id} className="bg-white p-4 rounded-3xl shadow-sm border-l-4 border-green-500">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">🚗 В ПУТИ</span>
+                          <b className="text-lg">{o.price} ₸</b>
+                        </div>
+                        <p className="text-sm"><b>Машина:</b> {o.car_type || "Легковая"}</p>
+                        <p className="text-sm"><b>Откуда:</b> {o.from_address}</p>
+                        <p className="text-sm"><b>Куда:</b> {o.to_address}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
               )}
-            </div>
-          )}
 
-          {!loading && searched && !order && (
-            <div className="text-center py-8 bg-white/50 rounded-3xl border-2 border-dashed border-gray-300">
-              <p className="text-gray-400 text-xs font-bold uppercase">Активных заказов нет</p>
-            </div>
+              {/* ВКЛАДКА: ИСТОРИЯ */}
+             {activeTab === "history" && (
+  <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+    {/* Карточка счета */}
+    <div className="bg-black text-white p-6 rounded-[2rem] shadow-xl relative overflow-hidden">
+      <div className="relative z-10">
+        <p className="text-[10px] font-bold text-yellow-500 uppercase opacity-80 tracking-widest">Всего потрачено</p>
+        <p className="text-4xl font-black italic">{totalSpent.toLocaleString()} ₸</p>
+      </div>
+      <div className="absolute -right-4 -bottom-4 text-7xl opacity-10 italic font-black">CASH</div>
+    </div>
+
+    {/* Заголовок с кнопкой очистки */}
+    <div className="flex justify-between items-center mt-6 px-1">
+      <h2 className="text-xs font-black uppercase text-gray-400 tracking-widest">Архив поездок</h2>
+      {historyOrders.length > 0 && (
+        <button 
+          onClick={clearHistory}
+          className="text-[10px] font-bold text-red-400 uppercase bg-red-400/10 px-3 py-1 rounded-full active:scale-95 transition-all"
+        >
+          🗑️ Очистить
+        </button>
+      )}
+    </div>
+
+    {/* Список истории */}
+    <div className="space-y-2">
+      {historyOrders.length === 0 ? (
+        <div className="text-center py-10 bg-white/50 rounded-3xl border-2 border-dashed border-gray-200">
+           <p className="text-gray-400 text-xs font-bold uppercase">История пуста</p>
+        </div>
+      ) : (
+        historyOrders.map(o => (
+          <div key={o.id} className="bg-white p-3 rounded-2xl flex justify-between items-center shadow-sm border border-gray-100 transition-opacity hover:opacity-100 opacity-80">
+            <div>
+              <p className="text-xs font-bold text-black">{o.to_address}</p>
+              <p className="text-[10px] text-gray-400 font-medium">
+                {new Date(o.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                  <p className="text-sm font-black text-black">{o.price} ₸</p>
+                  <p className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${
+                   o.status === 'completed' ? 'text-green-600 bg-green-50' : 'text-red-500 bg-red-50'
+                }`}>
+                  {o.status === 'completed' ? 'Завершен' : 'Отменен'}
+                    </p>
+                   </div>
+                  </div>
+                  ))
+                 )}
+                </div>
+               </div>
+              )}
+            </>
           )}
+        </main>
+
+        {/* НИЖНЯЯ ПАНЕЛЬ */}
+        <div className="fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-md border-t border-white/10 px-2 pb-safe pt-2 z-50">
+          <div className="max-w-md mx-auto flex justify-around">
+            <button onClick={() => setActiveTab("created")} className={`flex flex-col items-center gap-1 flex-1 py-2 ${activeTab === "created" ? "text-yellow-500" : "text-gray-500"}`}>
+              <span className="text-xl">📋</span>
+              <span className="text-[9px] font-black uppercase tracking-tighter">Ожидают</span>
+              {pendingOrders.length > 0 && <span className="absolute top-2 translate-x-4 bg-yellow-500 text-black text-[8px] font-black rounded-full w-4 h-4 flex items-center justify-center">{pendingOrders.length}</span>}
+            </button>
+
+            <button onClick={() => setActiveTab("active")} className={`flex flex-col items-center gap-1 flex-1 py-2 ${activeTab === "active" ? "text-yellow-500" : "text-gray-500"}`}>
+              <span className="text-xl">🚕</span>
+              <span className="text-[9px] font-black uppercase tracking-tighter">В пути</span>
+              {activeOrders.length > 0 && <span className="absolute top-2 translate-x-4 bg-green-500 text-white text-[8px] font-black rounded-full w-4 h-4 flex items-center justify-center">{activeOrders.length}</span>}
+            </button>
+
+            <button onClick={() => setActiveTab("history")} className={`flex flex-col items-center gap-1 flex-1 py-2 ${activeTab === "history" ? "text-yellow-500" : "text-gray-500"}`}>
+              <span className="text-xl">💰</span>
+              <span className="text-[9px] font-black uppercase tracking-tighter">История</span>
+            </button>
+          </div>
         </div>
       </div>
     </ProtectedRoute>
