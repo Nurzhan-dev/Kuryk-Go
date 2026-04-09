@@ -79,7 +79,7 @@ function NavBar() {
           <img 
             src="/logo.jpg" 
             alt="Logo" 
-            className="w-full h-full object-cover scale-125" 
+            className="w-full h-full object-cover scale-110" 
           />
         </div>
 
