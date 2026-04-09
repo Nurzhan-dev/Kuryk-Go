@@ -72,12 +72,15 @@ function NavBar() {
       <div className="relative z-10 h-full flex justify-between items-start pt-3 px-3 md:px-6">
         
         {/* ЛЕВАЯ ЧАСТЬ: ЛОГОТИП */}
-        <div 
-          className="flex items-center justify-center cursor-pointer active:scale-95 transition-transform bg-white w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg border border-white/20 p-1 overflow-hidden"
+         <div 
+          className="flex items-center justify-center cursor-pointer active:scale-95 transition-transform bg-white w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg border border-white/20 overflow-hidden"
           onClick={() => router.push("/")}
         >
-          {/* object-contain, чтобы логотип КурыкГоу не обрезался внутри круга */}
-          <img src="/logo.jpg" alt="Logo" className="w-full h-full object-contain rounded-full" />
+          <img 
+            src="/logo.jpg" 
+            alt="Logo" 
+            className="w-full h-full object-cover" 
+          />
         </div>
 
         {/* ПРАВАЯ ЧАСТЬ: ДИНАМИЧЕСКИЕ КНОПКИ */}
