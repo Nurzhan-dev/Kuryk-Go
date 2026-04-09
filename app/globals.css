@@ -20,7 +20,13 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: white; /* Для такси лучше светлый фон */
+  background: white;
+  -webkit-tap-highlight-color: transparent;
+}
+button:focus, 
+button:active {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 /* Scrollbar hide utility for horizontal scrollable containers */
