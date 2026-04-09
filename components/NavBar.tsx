@@ -4,6 +4,24 @@ import { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 
+// Иконка: Вход (Стрелка ВНУТРЬ)
+const SignInIcon = ({ className = "" }) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+    <polyline points="10 17 15 12 10 7" />
+    <line x1="15" y1="12" x2="3" y2="12" />
+  </svg>
+);
+
+// Иконка: Выход (Стрелка НАРУЖУ)
+const SignOutIcon = ({ className = "" }) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <polyline points="16 17 21 12 16 7" />
+    <line x1="21" y1="12" x2="9" y2="12" />
+  </svg>
+);
+
 function NavBar() {
   const [user, setUser] = useState<any>(null);
   const [isNavigating, setIsNavigating] = useState(false);
@@ -20,14 +38,10 @@ function NavBar() {
       (event: AuthChangeEvent, session: Session | null) => {
         setUser(session?.user || null);
         if (event === 'SIGNED_IN') {
-    const role = session?.user?.user_metadata?.role;
-    if (role === 'driver') {
-    router.push("/driver");
-    } else {
-    router.push("/");
-       }
+          const role = session?.user?.user_metadata?.role;
+          router.push(role === 'driver' ? "/driver" : "/");
+        }
       }
-     }
     );
 
     return () => {
@@ -35,24 +49,13 @@ function NavBar() {
     };
   }, [router]);
 
-  useEffect(() => {
-    if (user) {
-      router.prefetch('/driver');
-    }
-  }, [user, router]);
-
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     router.push("/sign-in");
   };
 
-  const goToDriver = () => {
-    setIsNavigating(true);
-    router.push("/driver");
-  };
-
   return (
-    <nav className="relative w-full h-28 md:h-36 overflow-hidden sticky top-0 z-50 shadow-sm">
+    <nav className="relative w-full h-24 md:h-32 overflow-hidden sticky top-0 z-50 shadow-sm bg-white">
       
       {/* 1. СЛОЙ БАННЕРА */}
       <div className="absolute inset-0 z-0">
@@ -62,67 +65,59 @@ function NavBar() {
           style={{ objectPosition: 'center 73%' }} 
           alt="Banner"
         />
-        {/* Затемнение и Белый туман */}
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="absolute inset-x-0 bottom-0 h-12 md:h-16 bg-gradient-to-t from-white via-white/60 to-transparent"></div>
+        <div className="absolute inset-0 bg-black/5"></div>
+        <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white to-transparent"></div>
       </div>
-      <div className="relative z-10 h-full flex justify-between items-start pt-2 px-2 md:px-4">
-        
-        {/* ЛЕВАЯ ЧАСТЬ: ЛОГОТИП И КНОПКА */}
-      <div className="flex items-center gap-2">
-      <div 
-           className="flex items-center cursor-pointer active:scale-95 transition-transform" 
-           onClick={() => router.push("/")}
-      >
-      <div className="flex items-center justify-center rounded-lg overflow-hidden bg-white shadow-sm border border-white/20">
-      <img src="/logo.jpg" alt="Logo" className="h-10 md:h-11 w-28 md:w-36 object-cover" />
-      </div>
-      </div>
-       {user && user.user_metadata?.role === 'driver' && (
-       <button 
-           disabled={isNavigating}
-           className="text-white bg-black hover:bg-gray-800 px-4 md:px-5 py-2 md:py-2.5 rounded-lg transition-all font-bold text-xs md:text-sm shadow-md active:scale-95 h-7 md:h-8 flex items-center" 
-           onClick={goToDriver}
-       >
-          Кабинет
-         </button>
-       )}
-       {user && user.user_metadata?.role === 'client' && (
-       <button
-          onClick={() => router.push("/client")}
-          className="text-white bg-black hover:bg-gray-800 px-4 md:px-5 py-2 md:py-2.5 rounded-lg transition-all font-bold text-xs md:text-sm shadow-md active:scale-95 h-7 md:h-8 flex items-center"
-       >
-       Мои заказы
-       </button>
-       )}
-       </div>
 
-        {/* ПРАВАЯ ЧАСТЬ: ВХОД/ВЫХОД */}
-        <div className="flex items-center gap-2">
+      <div className="relative z-10 h-full flex justify-between items-start pt-3 px-3 md:px-6">
+        
+        {/* ЛЕВАЯ ЧАСТЬ: ЛОГОТИП */}
+        <div 
+          className="flex items-center cursor-pointer active:scale-95 transition-transform bg-white rounded-xl shadow-lg p-1.5"
+          onClick={() => router.push("/")}
+        >
+          <img src="/logo.jpg" alt="Logo" className="h-8 md:h-10 w-auto object-contain rounded-lg" />
+        </div>
+
+        {/* ПРАВАЯ ЧАСТЬ: ДИНАМИЧЕСКИЕ КНОПКИ */}
+        <div className="flex items-center gap-3">
           {user ? (
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] hidden sm:block text-white font-medium drop-shadow-md">
-                {user.user_metadata?.full_name || "Водитель"}
-              </span>
+            <>
+              {/* Кнопка Профиля (Человечек) */}
+              <button
+                disabled={isNavigating}
+                onClick={() => {
+                  setIsNavigating(true);
+                  const role = user.user_metadata?.role;
+                  router.push(role === 'driver' ? "/driver" : "/client");
+                }}
+                className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-white/90 backdrop-blur-sm text-black rounded-full shadow-lg border border-gray-200 active:scale-90 transition-all text-xl"
+              >
+                👤
+              </button>
+
+              {/* Кнопка Выхода (Стрелка НАРУЖУ) */}
               <button 
                 onClick={handleSignOut}
-                className="bg-white/10 hover:bg-red-600 text-white px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-[11px] md:text-xs font-semibold transition-all backdrop-blur-md border border-white/20 h-7 md:h-8 flex items-center"
+                className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-red-500 text-white rounded-full shadow-lg border border-red-600 active:scale-90 transition-all"
               >
-                Выход
+                <SignOutIcon className="w-5 h-5 md:w-6 md:h-6" />
               </button>
-            </div>
+            </>
           ) : (
+            /* Кнопка Входа (Стрелка ВНУТРЬ) */
             <button 
               onClick={() => router.push("/sign-in")}
-              className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-bold shadow-lg transition-all h-7 md:h-8 flex items-center"
+              className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-yellow-500 text-white rounded-full shadow-lg border border-yellow-600 active:scale-90 transition-all"
             >
-              Войти
+              <SignInIcon className="w-5 h-5 md:w-6 md:h-6" />
             </button>
           )}
         </div>
-      </div> {/* Закрытие слоя контента */}
+      </div>
     </nav>
   );
 }
 
 export default NavBar;
+    
