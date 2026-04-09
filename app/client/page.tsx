@@ -164,14 +164,7 @@ export default function ClientDashboard() {
   
   return (
     <ProtectedRoute requiredRole="client">
-      <div className="min-h-screen bg-gray-50 pb-24">
-        {/* Шапка */}
-        <div className="bg-white p-4 border-b sticky top-0 z-10">
-          <h1 className="text-xl font-black uppercase italic text-center">
-            KURYK <span className="text-yellow-500">GO</span>
-          </h1>
-        </div>
-
+      <div className="min-h-screen bg-gray-50 pb-24 pt-6">
         <main className="p-4 max-w-md mx-auto">
           {loading ? (
             <div className="text-center py-20 animate-pulse font-bold text-gray-400">ЗАГРУЗКА...</div>
@@ -180,7 +173,7 @@ export default function ClientDashboard() {
               {/* ВКЛАДКА: ОЖИДАЮТ (PENDING) */}
               {activeTab === "created" && (
                 <div className="space-y-4">
-                  <h2 className="text-xs font-black uppercase text-gray-400 tracking-widest">Новые заказы</h2>
+                  <h2 className="text-xs font-black uppercase text-gray-400 tracking-widest">Мои заказы</h2>
                   {pendingOrders.length === 0 ? (
                     <div className="text-center py-10 text-gray-400 italic text-sm">Нет активных заявок</div>
                   ) : (
@@ -280,25 +273,59 @@ export default function ClientDashboard() {
         </main>
 
         {/* НИЖНЯЯ ПАНЕЛЬ */}
-        <div className="fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-md border-t border-white/10 px-2 pb-safe pt-2 z-50">
-          <div className="max-w-md mx-auto flex justify-around">
-            <button onClick={() => setActiveTab("created")} className={`flex flex-col items-center gap-1 flex-1 py-2 ${activeTab === "created" ? "text-yellow-500" : "text-gray-500"}`}>
-              <span className="text-xl">📋</span>
-              <span className="text-[9px] font-black uppercase tracking-tighter">Ожидают</span>
-              {pendingOrders.length > 0 && <span className="absolute top-2 translate-x-4 bg-yellow-500 text-black text-[8px] font-black rounded-full w-4 h-4 flex items-center justify-center">{pendingOrders.length}</span>}
-            </button>
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-50 flex justify-around items-center h-16 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+  {/* Кнопка: Ожидают (Заказы созданные) */}
+  <button
+    onClick={() => setActiveTab("created")}
+    className={`flex flex-col items-center gap-0.5 flex-1 py-2 transition-all relative ${
+      activeTab === "created" ? "text-yellow-500" : "text-gray-400"
+    }`}
+  >
+    {activeTab === "created" && (
+      <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-yellow-400 rounded-full" />
+    )}
+    <span className="text-xl">📋</span>
+    <span className="text-[10px] font-black uppercase tracking-tighter">Заказы</span>
+    {pendingOrders.length > 0 && (
+      <span className="absolute top-1.5 right-6 bg-red-500 text-white text-[8px] font-black rounded-full w-4 h-4 flex items-center justify-center">
+        {pendingOrders.length}
+      </span>
+    )}
+  </button>
 
-            <button onClick={() => setActiveTab("active")} className={`flex flex-col items-center gap-1 flex-1 py-2 ${activeTab === "active" ? "text-yellow-500" : "text-gray-500"}`}>
-              <span className="text-xl">🚕</span>
-              <span className="text-[9px] font-black uppercase tracking-tighter">В пути</span>
-              {activeOrders.length > 0 && <span className="absolute top-2 translate-x-4 bg-green-500 text-white text-[8px] font-black rounded-full w-4 h-4 flex items-center justify-center">{activeOrders.length}</span>}
-            </button>
+  {/* Кнопка: В пути (Accepted) */}
+  <button
+    onClick={() => setActiveTab("active")}
+    className={`flex flex-col items-center gap-0.5 flex-1 py-2 transition-all relative ${
+      activeTab === "active" ? "text-yellow-500" : "text-gray-400"
+    }`}
+  >
+    {activeTab === "active" && (
+      <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-yellow-400 rounded-full" />
+    )}
+    <span className="text-xl">🚕</span>
+    <span className="text-[10px] font-black uppercase tracking-tighter">Активные</span>
+    {activeOrders.length > 0 && (
+      <span className="absolute top-1.5 right-6 bg-yellow-400 text-black text-[8px] font-black rounded-full w-4 h-4 flex items-center justify-center">
+        {activeOrders.length}
+      </span>
+    )}
+  </button>
 
-            <button onClick={() => setActiveTab("history")} className={`flex flex-col items-center gap-1 flex-1 py-2 ${activeTab === "history" ? "text-yellow-500" : "text-gray-500"}`}>
-              <span className="text-xl">💰</span>
-              <span className="text-[9px] font-black uppercase tracking-tighter">История</span>
-            </button>
-          </div>
+  {/* Кнопка: История (Completed/Cancelled) */}
+  <button
+    onClick={() => setActiveTab("history")}
+    className={`flex flex-col items-center gap-0.5 flex-1 py-2 transition-all relative ${
+      activeTab === "history" ? "text-yellow-500" : "text-gray-400"
+    }`}
+  >
+    {activeTab === "history" && (
+      <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-yellow-400 rounded-full" />
+    )}
+    <span className="text-xl">💰</span>
+    <span className="text-[10px] font-black uppercase tracking-tighter">История</span>
+    </button>
+         </div>
         </div>
       </div>
     </ProtectedRoute>
